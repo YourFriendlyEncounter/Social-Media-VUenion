@@ -45,7 +45,7 @@ export default {
 </script>
 
 <style>
-h1, h4, p{
+body, h1, h4, p{
   margin: 0;
 }
 #app {
