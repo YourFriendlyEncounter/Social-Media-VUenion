@@ -1,0 +1,9 @@
+export default class UserInfo {
+    constructor(id, name, lastName, birthDate, image = null){
+        this.id = id;
+        this.name = name;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.image = image;
+    }
+}
