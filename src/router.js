@@ -4,6 +4,9 @@ import store from "./store"
 
 Vue.use(Router)
 
+import Feed from './views/Feed.vue'
+import Authorize from './views/Authorize.vue'
+
 export default new Router({
     mode: "history",
     base: "/Social-Media/",
@@ -11,7 +14,7 @@ export default new Router({
         {
             path: "/feed",
             name: "Feed",
-            component: () => import('./views/Feed.vue'),
+            component: Feed,
             beforeEnter(to, from, next){
                 store.getters.checkUser ? next() : next("/")
             }
@@ -19,7 +22,7 @@ export default new Router({
         {
             path: "/",
             name: "Authorization",
-            component: () => import('./views/Authorize.vue'),
+            component: Authorize,
             beforeEnter(to, from, next){
                 store.getters.checkUser ? next("/feed") : next()
             }
