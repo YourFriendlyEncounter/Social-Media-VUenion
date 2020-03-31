@@ -15,9 +15,6 @@ export default new Router({
             path: "/feed",
             name: "Feed",
             component: Feed,
-            beforeEnter(to, from, next){
-                store.getters.checkUser ? next() : next("/")
-            }
         },
         {
             path: "/",
@@ -27,5 +24,11 @@ export default new Router({
                 store.getters.checkUser ? next("/feed") : next()
             }
         },
+        {
+            path: "/users/:id",
+            name: "UserProfile",
+            component: () => import('./views/PersonalPage.vue'),
+            props: true
+        }
     ]
 })

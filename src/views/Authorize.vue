@@ -38,6 +38,7 @@
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
 import Message from 'vue-m-message';
+import User from '../store/user'
 
 export default {
     components: { DatePicker },
@@ -70,6 +71,7 @@ export default {
                 })
                 .catch(err => {
                     this.sumbitStatus = err.message
+                    User.commit('setLoading', false)
                 })
         },
         loginUser(){

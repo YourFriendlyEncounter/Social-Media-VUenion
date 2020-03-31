@@ -1,6 +1,6 @@
 <template>
     <div id="feed">
-        <form id="form-new-post" @submit.prevent="newPost">
+        <form id="form-new-post" @submit.prevent="newPost" v-if="checkUser">
             <textarea class="input-text" 
             id="new-post-text" 
             rows="3" maxlength="3000" 
@@ -30,12 +30,15 @@ import Message from 'vue-m-message';
 
 export default {
     computed: {
+        getAuthors() {
+            return this.$store.getters.getUserList;
+        },
+        checkUser(){
+            return this.$store.getters.checkUser
+        },
         getPosts() {
             return this.$store.getters.getPosts.slice().reverse()
         },
-        getAuthors() {
-            return this.$store.getters.getUserList;
-        }
     },
     methods: {
         getAuthorById(id){
@@ -98,8 +101,8 @@ export default {
                     return postPublishDate.getDate() + "."
                     + (postPublishDate.getMonth() + 1) + "."
                     + postPublishDate.getFullYear() + " "
-                    + postPublishDate.getHours() + ":"
-                    + postPublishDate.getMinutes();
+                    + (postPublishDate.getHours()<10?'0':'') + postPublishDate.getHours() + ":"
+                    + (postPublishDate.getMinutes()<10?'0':'') + postPublishDate.getMinutes();
                 }
             }
             else if(dateDiff === 0){

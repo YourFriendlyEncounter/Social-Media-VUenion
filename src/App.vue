@@ -55,7 +55,7 @@ export default {
 </script>
 
 <style>
-body, h1, h4, p{
+body, h1, h2, h3, h4, p{
   margin: 0;
 }
 #div-loading{
@@ -86,8 +86,6 @@ body, h1, h4, p{
   width: 50vw;
   margin: 0 2rem;
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
 }
 footer{

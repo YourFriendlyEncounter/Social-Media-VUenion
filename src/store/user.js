@@ -3,6 +3,7 @@ import firebase from 'firebase/app'
 import User from './user_help'
 import UserInfo from './user_info'
 import Message from 'vue-m-message'
+import Router from '../router'
 
 export default {
     state: {
@@ -41,6 +42,8 @@ export default {
                             u.name,
                             u.lastName,
                             u.birthDate,
+                            u.image,
+                            u.about
                         )
                     )
                 })
@@ -56,7 +59,6 @@ export default {
         },
         async registerUser ({commit}, {email, password, name, lastName, birthDate}){
             commit('clearError')
-            commit('setLoading', true)
             try{
                 const user = await firebase
                 .auth()
@@ -75,11 +77,8 @@ export default {
                 .set(userInfo)
                 
                 commit('setUserInfo', userInfo)
-
-                commit('setLoading', false)
             }
             catch(error){
-                commit('setLoading', false)
                 commit('setError', error.message)
                 let message = "";
                 switch(error.message){
@@ -96,7 +95,6 @@ export default {
         },
         async loginUser ({commit}, {email, password}){
             commit('clearError')
-            commit('setLoading', true)
             try{
                 const user = await firebase
                 .auth()
@@ -111,11 +109,8 @@ export default {
                 
                 commit('setUser', new User(user.user.uid))
                 commit('setUserInfo', userInfo)
-
-                commit('setLoading', false)
             }
             catch(error){
-                commit('setLoading', false)
                 commit('setError', error.message)
                 let message = "";
                 switch(error.message){
@@ -137,7 +132,7 @@ export default {
             let userInfo = await (await firebase.database().ref('userInfos/'+payload.uid).once('value')).val()
             commit('setUser', new User(payload.uid))
             commit('setUserInfo', userInfo)
-            this.$router.push({ path: '/feed' })
+            Router.push({ path: '/feed' })
         }
     },
     getters: {

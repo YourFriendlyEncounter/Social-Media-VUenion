@@ -5,7 +5,7 @@
         <router-link  
         v-for="option in options" 
         :key="option.name" 
-        :to="option.link"
+        :to="{ name: option.link, params:{ id: getUserID }}"
         class="container-link">
             <img 
             :src="require('../assets/' + option.image)" 
@@ -24,33 +24,35 @@ export default {
                 {
                     name: "Лента",
                     image: "web.svg",
-                    link: "/feed"
+                    link: "Feed"
                 },
                 {
                     name: "Моя страница",
                     image: "house.png",
-                    link: "/feed"
+                    link: "UserProfile"
                 },
                 {
                     name: "Товарищи",
                     image: "friends.png",
-                    link: "/feed"
+                    link: "Feed"
                 },
                 {
                     name: "Сообщения",
                     image: "messages.png",
-                    link: "/feed"
+                    link: "Feed"
                 },
                 {
                     name: "Группы",
                     image: "groups.png",
-                    link: "/feed"
+                    link: "Feed"
                 }
             ]
         }
     },
-    methods: {
-
+    computed: {
+        getUserID() {
+            return this.$store.getters.user.id;
+        }
     }
 }
 </script>
