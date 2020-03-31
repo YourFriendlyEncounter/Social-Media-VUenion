@@ -3,9 +3,9 @@ const fs = require('fs')
 const httpPort = 80
 
 http.createServer((req, res) => {
-  fs.readFile('index.html', 'utf-8', (err, content) => {
+  fs.readFile('index.htm', 'utf-8', (err, content) => {
     if (err) {
-      console.log('Невозможно открыть файл "index.html".')
+      console.log('We cannot open "index.htm" file.')
     }
 
     res.writeHead(200, {
@@ -15,21 +15,11 @@ http.createServer((req, res) => {
     res.end(content)
   })
 }).listen(httpPort, () => {
-  console.log('Сервер запущен на: http://localhost:%s', httpPort)
+  console.log('Server listening on: http://localhost:%s', httpPort)
 })
 
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
     ? ''
-    : '/',
-    filenameHashing: false,
-    chainWebpack: config => {
-        config.module
-            .rule('svg')
-            .use('file-loader')
-            .options({
-                name: '[name].[ext]',
-                outputPath: ''
-            });
-    }
+    : '/'
 }
