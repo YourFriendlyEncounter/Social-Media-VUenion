@@ -3,12 +3,13 @@ import firebase from 'firebase/app'
 import User from './user_help'
 import UserInfo from './user_info'
 import Message from 'vue-m-message'
+import router from "vue-router"; 
 
 export default {
     state: {
         user: null,
         userInfo: null,
-        loading: false,
+        loading: true,
         userInfoList: []
     },
     mutations: {
@@ -137,6 +138,7 @@ export default {
             let userInfo = await (await firebase.database().ref('userInfos/'+payload.uid).once('value')).val()
             commit('setUser', new User(payload.uid))
             commit('setUserInfo', userInfo)
+            router.push('/feed')
         }
     },
     getters: {
@@ -151,6 +153,9 @@ export default {
         },
         getUserList(state){
             return state.userInfoList;
+        },
+        getLoading(state){
+            return state.loading;
         }
     }
 }

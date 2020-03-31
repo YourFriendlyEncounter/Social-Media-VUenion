@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" v-if="!isLoading">
     <Header></Header>
     <div id="main-content">
       <LeftSideBar v-if="checkUser" />
@@ -19,12 +19,18 @@
       from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
     </footer>
   </div>
+  <div v-else id="div-loading">
+    <div id="loading-inside">
+      <Loading />
+    </div>
+  </div>
 </template>
 
 <script>
 import Header from './components/Header.vue'
 import LeftSideBar from './components/LeftSideBar.vue'
 import RightSideBar from './components/RightSideBar.vue'
+import Loading from './components/Loading.vue'
 
 export default {
   name: 'App',
@@ -32,6 +38,7 @@ export default {
     Header,
     LeftSideBar,
     RightSideBar,
+    Loading,
   },
     computed: {
         checkUser(){
@@ -39,6 +46,9 @@ export default {
         },
         getUser(){
             return this.$store.getters.user
+        },
+        isLoading(){
+          return this.$store.getters.getLoading
         }
     }
 }
@@ -47,6 +57,18 @@ export default {
 <style>
 body, h1, h4, p{
   margin: 0;
+}
+#div-loading{
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#loading-inside{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

@@ -52,7 +52,7 @@ export default {
                 return;
             }
             if(this.birthDate == null){
-                Message.error("Укажите вашу дату рождения."); //annonestalker@gmail.com
+                Message.error("Укажите вашу дату рождения.");
                 return;
             }
             const user = {
@@ -80,8 +80,7 @@ export default {
             this.$store.dispatch('loginUser', user)
                 .then(() => {
                     this.sumbitStatus = "ok";
-                    this.$router.push('/feed')
-                    Message.success("Добро пожаловать, "+user.email)
+                    Message.success("Добро пожаловать, "+this.$store.getters.getUserInfo.name+"!")
                 })
                 .catch(err => {
                     this.sumbitStatus = err.message
