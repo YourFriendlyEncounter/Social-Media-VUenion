@@ -5,6 +5,8 @@ import Message from "vue-m-message"
 
 Vue.use(Router)
 
+import EditProfile from './views/EditPage.vue'
+
 export default new Router({
     mode: "history",
     base: "/Social-Media/",
@@ -27,10 +29,6 @@ export default new Router({
             name: "UserProfile",
             component: () => import('./views/PersonalPage.vue'),
             beforeEnter(to, from, next) {
-                if(from.name == to.name)
-                {
-                    alert("aa")
-                }
                 store.getters.getUserById(to.params.id).name != "[Deleted]" ? next() : Message.error("Данный пользователь недоступен.")
             },
             props: true
@@ -38,7 +36,7 @@ export default new Router({
         {
             path: "/users/:id/edit",
             name: "EditProfile",
-            component: () => import('./views/EditPage.vue'),
+            component: EditProfile,
             beforeEnter(to, from, next) {
                 to.params.id == store.getters.user.id ? next() : Message.error("Доступ отклонён.")
             },
