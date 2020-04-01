@@ -4,7 +4,7 @@
     <div id="main-content">
       <LeftSideBar v-if="checkUser" />
       <div id="main-content-center">
-        <router-view />
+        <router-view :key="$route.fullPath" />
       </div>
       <RightSideBar v-if="checkUser" />
     </div>
@@ -48,14 +48,14 @@ export default {
             return this.$store.getters.user
         },
         isLoading(){
-          return this.$store.getters.getLoading
+          return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos
         }
     }
 }
 </script>
 
 <style>
-body, h1, h2, h3, h4, p{
+body, h1, h2, h4, p{
   margin: 0;
 }
 #div-loading{
@@ -156,6 +156,16 @@ footer a{
 }
 .custom-button:active{
   box-shadow:inset 0 0.6em 2em -0.3em rgba(0,0,0,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12);
+}
+.form-generic{
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+.simple-flex{
+  display: flex;
+  align-items: center;
 }
 a{
   text-decoration: none;

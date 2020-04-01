@@ -9,7 +9,8 @@ export default {
     state: {
         user: null,
         userInfo: null,
-        loading: true,
+        loadingCurrentUser: true,
+        loadingUserInfos: true,
         userInfoList: []
     },
     mutations: {
@@ -19,8 +20,11 @@ export default {
         setUserInfo(state, payload){
             state.userInfo = payload;
         },
-        setLoading(state, payload){
-            state.loading = payload;
+        setLoadingCurrentUser(state, payload){
+            state.loadingCurrentUser = payload;
+        },
+        setLoadingUserInfos(state, payload){
+            state.loadingUserInfos = payload;
         },
         setUserInfoList(state, payload){
             state.userInfoList = payload;
@@ -29,29 +33,31 @@ export default {
     actions: {
         async loadUserInfos ({commit}){
             commit('clearError')
-            commit('setLoading', true)
+            commit('setLoadingUserInfos', true)
             try{
                 let userInfos = await firebase.database().ref('userInfos').once('value');
                 let userInfosVal = userInfos.val();
                 const usersArray = []
                 Object.keys(userInfosVal).forEach(key => {
                     const u = userInfosVal[key]
-                    usersArray.push(
-                        new UserInfo(
-                            u.id,
-                            u.name,
-                            u.lastName,
-                            u.birthDate,
-                            u.image,
-                            u.about
-                        )
-                    )
+
+                    let newUserInfo = new UserInfo();
+                    newUserInfo.id = u.id;
+                    newUserInfo.comrades = u.comrades;
+                    newUserInfo.name = u.name;
+                    newUserInfo.lastName = u.lastName;
+                    newUserInfo.birthDate = u.birthDate;
+                    newUserInfo.image = u.image;
+                    newUserInfo.status = u.status;
+                    newUserInfo.about = u.about;
+
+                    usersArray.push(newUserInfo)
                 })
                 commit('setUserInfoList', usersArray)
-                commit('setLoading', false)
+                commit('setLoadingUserInfos', false)
             }
             catch(error){
-                commit('setLoading', false)
+                commit('setLoadingUserInfos', false)
                 commit('setError', error.message)
                 Message.error(error);
                 throw error
@@ -64,19 +70,23 @@ export default {
                 .auth()
                 .createUserWithEmailAndPassword(email, password)
                 commit('setUser', new User(user.user.uid))
-                const userInfo = new UserInfo(
-                    user.user.uid,
-                    name,
-                    lastName,
-                    birthDate.toString()
-                );
+
+                let newUserInfo = new UserInfo()
+                newUserInfo.id = user.user.uid;
+                newUserInfo.name = name;
+                newUserInfo.lastName = lastName;
+                newUserInfo.birthDate = birthDate.toString();
+                newUserInfo.comrades = [];
+                newUserInfo.image = "";
+                newUserInfo.status = "";
+                newUserInfo.about = "";
                 // Добавить подробную информацию о пользователе в БД
                 await firebase
                 .database()
                 .ref('userInfos/'+user.user.uid)
-                .set(userInfo)
+                .set(newUserInfo)
                 
-                commit('setUserInfo', userInfo)
+                commit('setUserInfo', newUserInfo)
             }
             catch(error){
                 commit('setError', error.message)
@@ -129,10 +139,40 @@ export default {
             }
         },
         async loggedUser({commit}, payload){
-            let userInfo = await (await firebase.database().ref('userInfos/'+payload.uid).once('value')).val()
-            commit('setUser', new User(payload.uid))
-            commit('setUserInfo', userInfo)
-            Router.push({ path: '/feed' })
+            commit('setLoadingCurrentUser', true)
+            try{
+                let userInfo = await (await firebase.database().ref('userInfos/'+payload.uid).once('value')).val()
+                commit('setUser', new User(payload.uid))
+                commit('setUserInfo', userInfo)
+            }
+            catch(error){
+                commit('serError', error.message)
+                Message.error(error.message)
+                throw error
+            }
+            finally{
+                Router.push({ path: '/feed' })
+                commit('setLoadingCurrentUser', false)
+            }
+        },
+        async changeUserInfo({commit}, payload){
+            try{
+                commit('setLoadingCurrentUser', true)
+                await firebase
+                .database()
+                .ref('userInfos/'+payload.id)
+                .set(payload);
+                Message.success("Информация профиля изменена.");
+                Router.push({ name: 'UserProfile', params: { id: payload.id }});
+            }
+            catch(error){
+                commit('serError', error.message)
+                Message.error(error.message)
+                throw error
+            }
+            finally{
+                commit('setLoadingCurrentUser', false)
+            }
         }
     },
     getters: {
@@ -148,8 +188,25 @@ export default {
         getUserList(state){
             return state.userInfoList;
         },
-        getLoading(state){
-            return state.loading;
-        }
+        getLoadingCurrentUser(state){
+            return state.loadingCurrentUser;
+        },
+        getLoadingUserInfos(state){
+            return state.loadingUserInfos;
+        },
+        getUserById: (state, getters) => (id) => {
+            let userList = getters.getUserList;
+            let user = {
+                name: "[Deleted]",
+                lastName: ""
+            }
+            Object.keys(userList).forEach(key =>{
+                const currentUser = userList[key]
+                if(currentUser.id === id){
+                    user = currentUser;
+                }
+            })
+            return user;
+        },
     }
 }

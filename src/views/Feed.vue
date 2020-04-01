@@ -12,10 +12,14 @@
         class="container-white post-generic">
             <div class="post-author-info" >
                 <div class="post-author-photo-block">
-                    <img src="../assets/newUser.svg" width=48>
+                    <img :src="getImage(post.user)" width=48>
                 </div>
                 <div class="post-author-name-date-block">
-                    <p> {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}</p>
+                    <router-link 
+                    class="link-user"
+                    :to="{ name: 'UserProfile', params: { id: post.user }}"> 
+                        {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
+                    </router-link>
                     <p> {{ getRelativeDate(post.dateTimeAdded) }} </p>
                 </div>
             </div>
@@ -42,21 +46,15 @@ export default {
     },
     methods: {
         getAuthorById(id){
-            let author = null;
-            Object.keys(this.getAuthors).forEach(key =>{
-                const currentAuthor = this.getAuthors[key]
-                if(currentAuthor.id == id){
-                    author = currentAuthor;
-                }
-            })
-            if(author == null)
+            return this.$store.getters.getUserById(id)
+        },
+        getImage(id){
+            let author = this.getAuthorById(id);
+            if(!author.image)
             {
-                return {
-                    name: "[Deleted]",
-                    lastName: ""
-                }
+                let images = require.context('../assets/', false, /\.svg$/);
+                return images("./anonymous.svg")
             }
-            return author;
         },
         newPost(){
             if (this.newPostText.length < 3){
@@ -130,6 +128,9 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+}
+.link-user{
+    color: blue;
 }
 #new-post-text{
     width: 100%;

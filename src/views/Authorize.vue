@@ -126,12 +126,6 @@ export default {
 #div-authorize{
     margin: 0 1rem;
 }
-.form-generic{
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem;
-    border-radius: 4px;
-}
 h2{
     margin: 0.5rem 0 1.5rem 0;
 }
