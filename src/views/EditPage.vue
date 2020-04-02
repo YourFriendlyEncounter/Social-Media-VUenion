@@ -8,17 +8,30 @@
             </div>
             <input type="text" class="input-text" placeholder="Имя" minlength="3" v-model="user.name" required>
             <input type="text" class="input-text" placeholder="Фамилия" minlength="3" v-model="user.lastName" required>
-            <input type="text" class="input-text" placeholder="Статус" v-model="user.status" required>
+            <input type="text" class="input-text" placeholder="Статус" v-model="user.status">
+            <date-picker :required="true"
+                    v-model="user.birthDate" 
+                    :clearable="false"
+                    :editable="false"
+                    :placeholder="'Дата рождения'"/>
             <textarea class="input-text" rows="3" maxlength="3000" id="textarea-about" placeholder="О себе" v-model="user.about"></textarea>
-            <input type="submit" class="custom-button" style="background-color:#42cc8c;">
+            <div id="div-controls">
+                <button class="custom-button" style="background-color:#ebce59;">Отменить</button>
+                <input type="submit" class="custom-button" style="background-color:#42cc8c;">
+            </div>
         </form>
     </div>
 </template>
 
 <script>
+import DatePicker from 'vue2-datepicker';
+import 'vue2-datepicker/index.css'; 
 import Message from 'vue-m-message';
 
 export default {
+    components: {
+        DatePicker
+    },
     computed: {
         getCurrentPageUser() {
             return this.$store.getters.getUserById(this.id);
@@ -43,6 +56,9 @@ export default {
             if(!this.user.comrades){
                 this.user.comrades = []
             }
+            if(!this.user.birthDate){
+                this.user.birthDate = new Date()
+            }
             this.$store.dispatch('changeUserInfo', this.user)
         }
     },
@@ -65,6 +81,9 @@ export default {
 #h-edit-profile{
     margin-bottom: 1rem;
 }
+.mx-datepicker{
+    margin: 0 0 1rem 0;
+}
 .input-text:not(:last-child){
     margin-bottom: 1rem;
 }
@@ -72,5 +91,12 @@ export default {
     resize: vertical; 
     min-height: 2.1rem;
     max-height: 12rem; 
+}
+.custom-button{
+    width: 49%;
+}
+#div-controls{
+    display: flex;
+    justify-content: space-between;
 }
 </style>

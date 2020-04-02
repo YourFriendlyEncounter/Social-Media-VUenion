@@ -24,6 +24,7 @@
                 </div>
             </div>
             <p class="post-text">{{ post.text }}</p>
+            <Rating :post="post" />
         </div>
     </div>
 </template>
@@ -31,8 +32,12 @@
 <script>
 import Post from '../store/post_help'
 import Message from 'vue-m-message';
+import Rating from '../components/Rating'
 
 export default {
+    components: {
+        Rating
+    },
     computed: {
         getAuthors() {
             return this.$store.getters.getUserList;
@@ -40,9 +45,12 @@ export default {
         checkUser(){
             return this.$store.getters.checkUser
         },
+        getUser(){
+            return this.$store.getters.user;
+        },
         getPosts() {
             return this.$store.getters.getPosts.slice().reverse()
-        },
+        }
     },
     methods: {
         getAuthorById(id){
@@ -61,15 +69,15 @@ export default {
                 Message.error("Нельзя опубликовать пост, длиной менее 3 символов.")
                 return;
             }
-            const newPost = new Post(
-                this.newPostText,
-                (new Date()).toString(),
-                this.newPostImages,
-                false,
-                0,
-                0,
-                this.$store.getters.user.id
-            )
+            let newPost = new Post()
+            newPost.text = this.newPostText;
+            newPost.dateTimeAdded = (new Date()).toString();
+            newPost.images = this.newPostImages;
+            newPost.edited = false;
+            newPost.liked = [];
+            newPost.disliked = [];
+            newPost.user = this.$store.getters.user.id;
+            
             this.$store.dispatch('newPost', newPost)
                 .then(() => {
                     this.sumbitStatus = "ok";

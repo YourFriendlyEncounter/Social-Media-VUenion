@@ -4,8 +4,8 @@ export default class Post {
         dateTimeAdded,
         images,
         edited,
-        likes,
-        dislikes,
+        liked,
+        disliked,
         user = null,
         id = null,
     ) {
@@ -13,8 +13,8 @@ export default class Post {
         this.dateTimeAdded = dateTimeAdded;
         this.images = images;
         this.edited = edited;
-        this.likes = likes;
-        this.dislikes = dislikes;
+        this.liked = liked;
+        this.disliked = disliked;
         this.user = user;
         this.id = id;
     }

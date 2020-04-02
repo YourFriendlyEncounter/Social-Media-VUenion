@@ -5,7 +5,8 @@ import Message from 'vue-m-message'
 
 export default {
     state: {
-        posts: []
+        posts: [],
+        loadingLikes: false,
     },
     mutations: {
         loadPosts (state, payload) {
@@ -13,6 +14,9 @@ export default {
         },
         newPost (state, payload) {
             state.posts.push(payload)
+        },
+        setLoadingLikes(state, payload){
+            state.loading = payload
         }
     },
     actions: {
@@ -31,8 +35,8 @@ export default {
                             p.dateTimeAdded,
                             p.images,
                             p.edited,
-                            p.likes,
-                            p.dislikes,
+                            p.liked,
+                            p.disliked,
                             p.user,
                             key
                         )
@@ -66,8 +70,8 @@ export default {
                     payload.dateTimeAdded,
                     payload.images,
                     payload.edited,
-                    payload.likes,
-                    payload.dislikes,
+                    payload.liked,
+                    payload.disliked,
                     getters.user.id
                 )
                 const post = await firebase.database()
@@ -97,10 +101,68 @@ export default {
                 throw error
             }
         },
+        async changePost({commit}, payload){
+            commit('setLoading', true)
+            await firebase.database()
+                .ref('posts/'+payload.id)
+                .set(payload);
+            commit('setLoading', false)
+        },
+        async changeLikes({commit, getters}, {post, userID, isToRemove}){
+            if(getters.isLoadingLikes)
+                return;
+            commit('setLoadingLikes', true)
+            let newLiked = [];
+            if(!post.liked)
+                post.liked = [];
+            if(!post.disliked)
+                post.disliked = [];
+            if(!post.images)
+                post.images = [];
+            if(!isToRemove){
+                post.liked.push(userID)
+                newLiked = post.liked;
+            }
+            else{
+                newLiked = post.liked.filter(pl => pl != userID)
+                post.liked = post.liked.filter(pl => pl != userID)
+            }
+            await firebase.database()
+                .ref('posts/'+post.id+"/liked/")
+                .set(newLiked);
+            commit('setLoadingLikes', false)
+        },
+        async changeDislikes({commit, getters}, {post, userID, isToRemove}){
+            if(getters.isLoadingLikes)
+                return;
+            commit('setLoadingLikes', true)
+            let newDisliked = [];
+            if(!post.liked)
+                post.liked = [];
+            if(!post.disliked)
+                post.disliked = [];
+            if(!post.images)
+                post.images = [];
+            if(!isToRemove){
+                post.disliked.push(userID)
+                newDisliked = post.disliked;
+            }
+            else{
+                newDisliked = post.disliked.filter(pl => pl != userID)
+                post.disliked = post.disliked.filter(pl => pl != userID)
+            }
+            await firebase.database()
+                .ref('posts/'+post.id+"/disliked/")
+                .set(newDisliked);
+            commit('setLoadingLikes', false)
+        }
     },
     getters: {
         getPosts(state) {
             return state.posts;
+        },
+        isLoadingLikes(state){
+            return state.loadingLikes
         }
     }
 }
