@@ -15,12 +15,15 @@ export default {
         newPost (state, payload) {
             state.posts.push(payload)
         },
+        removePost(state, payload){
+            state.posts = state.posts.filter(p => p.id != payload.id)
+        },
         setLoadingLikes(state, payload){
             state.loading = payload
         }
     },
     actions: {
-        async loadPosts ({commit}){
+        async loadPosts ({commit}, {target}){
             commit('clearError')
             commit('setLoading', true)
             try{
@@ -28,19 +31,25 @@ export default {
                 const posts = post.val()
                 const postsArray = []
                 Object.keys(posts).forEach(key => {
-                    const p = posts[key]
-                    postsArray.push(
-                        new Post(
-                            p.text,
-                            p.dateTimeAdded,
-                            p.images,
-                            p.edited,
-                            p.liked,
-                            p.disliked,
-                            p.user,
-                            key
+                    let p = posts[key]
+                    if(!p.target)
+                        p.target = "feed"
+                    if(p.target === target || target === "feed"){
+                        postsArray.push(
+                            new Post(
+                                p.text,
+                                p.dateTimeAdded,
+                                p.images,
+                                p.edited,
+                                p.liked,
+                                p.disliked,
+                                p.user,
+                                p.type,
+                                p.target,
+                                key
+                            )
                         )
-                    )
+                    }
                 })
                 commit('loadPosts', postsArray)
                 commit('setLoading', false)
@@ -72,11 +81,18 @@ export default {
                     payload.edited,
                     payload.liked,
                     payload.disliked,
-                    getters.user.id
+                    getters.user.id,
+                    payload.type,
+                    payload.target,
                 )
                 const post = await firebase.database()
                 .ref('posts')
                 .push(newPost)
+                
+                if(payload.type == "comment")
+                    Message.success("Комментарий добавлен.");
+                else if(payload.type == "post")
+                    Message.success("Пост добавлен.");
 
                 commit('newPost', {
                     ...newPost,
@@ -88,18 +104,28 @@ export default {
             catch(error){
                 commit('setLoading', false)
                 commit('setError', error.message)
-                let message = "";
-                switch(error.message){
-                    case "The email address is already in use by another account.":
-                        message = "Данный email-адрес уже используется другим аккаунтом."
-                        break;
-                    default: 
-                        message = error.message; 
-                        break;
-                }
-                Message.error(message);
+                Message.error(error.message);
                 throw error
             }
+        },
+        async deletePost({commit}, payload){
+            commit('clearError')
+            commit('setLoading', true)
+            try{
+                await firebase.database()
+                .ref('posts/'+payload.id)
+                .remove();
+
+                commit("removePost", payload);
+                if(payload.type == "comment")
+                    Message.success("Комментарий удалён.");
+                else if(payload.type == "post")
+                    Message.success("Пост удалён.");
+            }
+            catch(error){
+                Message.error(error.message)
+            }
+            commit('setLoading', false)
         },
         async changePost({commit}, payload){
             commit('setLoading', true)

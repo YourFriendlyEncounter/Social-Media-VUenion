@@ -24,7 +24,37 @@
                 </div>
             </div>
             <p class="post-text">{{ post.text }}</p>
+            <hr>
             <Rating :post="post" />
+            <div class="post-comment-section">
+                <!--Комментарии-->
+                <hr>
+                <div class="post-comment" v-for="comment in getComments(post.id)" :key="comment.id">
+                    <div class="post-comment-inner">
+                        <a 
+                        href="#"
+                        v-if="getUser.id == comment.user" 
+                        class="post-comment-delete"
+                        @click="deleteComment(comment)">X</a>
+                        <div class="post-author-photo-block">
+                            <img :src="getImageURL(comment.user).link" width="32" height="32">
+                        </div>
+                        <div class="post-author-name-date-block">
+                            <router-link 
+                            class="link-user"
+                            :to="{ name: 'UserProfile', params: { id: comment.user }}"> 
+                                {{ getAuthorById(comment.user).name }} {{ getAuthorById(comment.user).lastName }}
+                            </router-link>
+                            <p> {{ getRelativeDate(comment.dateTimeAdded) }} </p>
+                        </div>
+                        <p style="margin-left: 0.5rem; max-width: 70%;">{{ comment.text }}</p>
+                    </div>
+                    <div>
+                    <Rating :post="comment" />
+                    </div>
+                </div>
+                <NewComment v-if="checkUser" :post="post" :userImage="getImageURL(getUser.id).link" />
+            </div>
         </div>
     </div>
 </template>
@@ -33,11 +63,13 @@
 import Post from '../store/post_help'
 import Message from 'vue-m-message';
 import Rating from '../components/Rating'
+import NewComment from '../components/NewComment'
 import firebase from 'firebase/app'
 
 export default {
     components: {
-        Rating
+        Rating,
+        NewComment
     },
     computed: {
         getAuthors() {
@@ -50,7 +82,7 @@ export default {
             return this.$store.getters.user;
         },
         getPosts() {
-            return this.$store.getters.getPosts.slice().reverse()
+            return this.$store.getters.getPosts.slice().filter(p => p.type == "post" && p.target == "feed").reverse()
         }
     },
     methods: {
@@ -104,12 +136,13 @@ export default {
             newPost.liked = [];
             newPost.disliked = [];
             newPost.user = this.$store.getters.user.id;
+            newPost.type = "post";
+            newPost.target = "feed";
 
             this.$store.dispatch('newPost', newPost)
                 .then(() => {
                     this.sumbitStatus = "ok";
                     this.$router.push('/')
-                    Message.success("Пост опубликован.")
                     this.newPostText = ""
                     this.newPostImages = []
                 })
@@ -142,6 +175,12 @@ export default {
                 return "Только что";
             }
             return dateDiff + suffix;
+        },
+        getComments(postID){
+            return this.$store.getters.getPosts.slice().filter(p => p.type == "comment" && p.target == postID);
+        },
+        deleteComment(comment){
+            this.$store.dispatch('deletePost', comment)
         }
     },
     data(){
@@ -192,7 +231,30 @@ export default {
     margin-right: .5rem;
     border-radius: 25px;
 }
+.post-author-name-date-block p{
+    font-size: 80%;
+    color: gray;
+}
 .post-text{
     overflow-wrap: break-word;
+}
+.post-comment-inner{
+    display: flex;
+}
+.post-comment{
+    display: flex;
+    justify-content: space-between;
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+.post-comment-delete{
+    margin-top: 0.5rem;
+    margin-left: -1.25rem;
+    margin-right: 1.25rem;
+    width: 0;
+    opacity: 0.4;
+}
+.post-comment-delete:hover{
+    opacity: 1;
 }
 </style>

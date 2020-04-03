@@ -17,6 +17,7 @@
       <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a>,
       <a href="https://www.flaticon.com/authors/mynamepong" title="mynamepong">mynamepong</a>,
       <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a>,
+      <a href="https://www.flaticon.com/authors/prosymbols" title="Prosymbols">Prosymbols</a>,
       <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a>,
 
       from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
@@ -165,6 +166,16 @@ footer a{
     flex-direction: column;
     padding: 0.5rem;
     border-radius: 4px;
+}
+.button-transparent-clickable{
+    background: transparent;
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    user-select: none;
+    cursor: pointer;
 }
 .simple-flex{
   display: flex;

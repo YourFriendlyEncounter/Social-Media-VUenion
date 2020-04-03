@@ -7,6 +7,8 @@ export default class Post {
         liked,
         disliked,
         user = null,
+        type = "post",
+        target = "",
         id = null,
     ) {
         this.text = text;
@@ -17,5 +19,7 @@ export default class Post {
         this.disliked = disliked;
         this.user = user;
         this.id = id;
+        this.type = type;
+        this.target = target;
     }
 }
