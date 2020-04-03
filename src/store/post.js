@@ -163,6 +163,6 @@ export default {
         },
         isLoadingLikes(state){
             return state.loadingLikes
-        }
+        },
     }
 }

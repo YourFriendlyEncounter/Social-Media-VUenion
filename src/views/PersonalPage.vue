@@ -22,7 +22,7 @@
 
 <script>
 //import $ from 'jquery';
-
+import firebase from 'firebase/app'
 export default {
     computed: {
         getCurrentPageUser() {
@@ -50,6 +50,22 @@ export default {
     methods: {
         editProfile() {
             this.$router.push({ name: "EditProfile", params: { id: this.id }})
+        },
+        async getSetImage(){
+            if(!this.user.image)
+            {
+                let images = require.context('../assets/', false, /\.svg$/);
+                document.getElementById("img-avatar")
+                .setAttribute('src', images("./anonymous.svg"))
+            }
+            else{
+                let link = 'userAvatars/' + this.id;
+                let newLink = await firebase.storage().ref().child(link)
+                .getDownloadURL().then((url) => { return url });
+                
+                document.getElementById("img-avatar")
+                .setAttribute('src', newLink)
+            }
         }
     },
     data() {
@@ -64,12 +80,7 @@ export default {
         this.user = this.getCurrentPageUser
     },
     mounted() {
-        if(!this.user.image)
-        {
-            let images = require.context('../assets/', false, /\.svg$/);
-            document.getElementById("img-avatar")
-            .setAttribute('src', images("./anonymous.svg"))
-        }
+        this.getSetImage()
     }
 }
 </script>

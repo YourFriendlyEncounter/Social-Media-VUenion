@@ -47,10 +47,11 @@ export default {
                     newUserInfo.name = u.name;
                     newUserInfo.lastName = u.lastName;
                     newUserInfo.birthDate = u.birthDate;
-                    newUserInfo.image = u.image;
+                    newUserInfo.image = u.image
+                
                     newUserInfo.status = u.status;
                     newUserInfo.about = u.about;
-
+ 
                     usersArray.push(newUserInfo)
                 })
                 commit('setUserInfoList', usersArray)
@@ -208,5 +209,8 @@ export default {
             })
             return user;
         },
+    },
+    modules: {
+
     }
 }

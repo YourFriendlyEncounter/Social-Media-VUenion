@@ -4,7 +4,7 @@
         <form id="form-edit-profile-main" class="form-generic container-generic" @submit.prevent="submitEdit">
             <div class="simple-flex input-text" style="margin-bottom: 1rem;">
                 <p style="margin-right: .5rem;">Фото профиля: </p>
-                <input type="file" accept="image/jpeg,image/jpg,image/png,image/gif" @click.prevent="sayUnimplemented">
+                <input type="file" ref="file" accept="image/jpeg,image/jpg,image/png,image/gif" @change="handleFileUpload()">
             </div>
             <input type="text" class="input-text" placeholder="Имя" minlength="3" v-model="user.name" required>
             <input type="text" class="input-text" placeholder="Фамилия" minlength="3" v-model="user.lastName" required>
@@ -16,7 +16,7 @@
                     :placeholder="'Дата рождения'"/>
             <textarea class="input-text" rows="3" maxlength="3000" id="textarea-about" placeholder="О себе" v-model="user.about"></textarea>
             <div id="div-controls">
-                <button class="custom-button" style="background-color:#ebce59;">Отменить</button>
+                <button class="custom-button" style="background-color:#ebce59;" @click.prevent="goBack">Отменить</button>
                 <input type="submit" class="custom-button" style="background-color:#42cc8c;">
             </div>
         </form>
@@ -38,6 +38,9 @@ export default {
         },
     },
     methods: {
+        goBack() {
+            this.$router.push({ name: "Feed" })
+        },
         sayUnimplemented() {
             Message.error('Извините, пока что эта функция недоступна.')
         },
@@ -59,7 +62,16 @@ export default {
             if(!this.user.birthDate){
                 this.user.birthDate = new Date()
             }
+            let userID = this.user.id;
+            let file = this.imageToSend
+            if(this.imageToSend != null){
+                this.$store.dispatch('sendFile', { file, userID })
+                this.user.image = true
+            }
             this.$store.dispatch('changeUserInfo', this.user)
+        },
+        handleFileUpload() {
+            this.imageToSend = this.$refs.file.files[0];
         }
     },
     props: {
@@ -67,7 +79,8 @@ export default {
     },
     data() {
         return {
-            user: null
+            user: null,
+            imageToSend: null
         }
     },
     beforeMount() {

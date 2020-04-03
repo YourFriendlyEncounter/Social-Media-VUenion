@@ -12,7 +12,7 @@
         class="container-white post-generic">
             <div class="post-author-info" >
                 <div class="post-author-photo-block">
-                    <img :src="getImage(post.user)" width=48>
+                    <img :src="getImageURL(post.user).link" width="48" height="48">
                 </div>
                 <div class="post-author-name-date-block">
                     <router-link 
@@ -33,6 +33,7 @@
 import Post from '../store/post_help'
 import Message from 'vue-m-message';
 import Rating from '../components/Rating'
+import firebase from 'firebase/app'
 
 export default {
     components: {
@@ -56,13 +57,39 @@ export default {
         getAuthorById(id){
             return this.$store.getters.getUserById(id)
         },
-        getImage(id){
-            let author = this.getAuthorById(id);
-            if(!author.image)
-            {
+        getImageURL(id){
+            let link = this.userAvatarImageURLs.slice().filter(i => i.id == id)[0];
+            if(!link){
                 let images = require.context('../assets/', false, /\.svg$/);
-                return images("./anonymous.svg")
+                link = {
+                    id: "",
+                    link: images("./anonymous.svg")
+                }
             }
+            return link
+        },
+        async loadImageURLs() {
+            this.$store.commit('setLoadingFiles', true)
+            let posts = this.getPosts;
+            for(let i = 0; i < posts.length; i++){
+                if(!this.getAuthorById(posts[i].user).image)
+                    continue;
+                try{
+                    let URL = {
+                        id: posts[i].user,
+                        link: ""
+                    }
+                    await firebase.storage().ref().child('userAvatars/'+posts[i].user)
+                    .getDownloadURL().then((url) => { 
+                        URL.link = url 
+                        this.userAvatarImageURLs.push(URL);
+                    });
+                }
+                catch(error){
+                    // Message.error(error.message)
+                }
+            }
+            this.$store.commit('setLoadingFiles', false)
         },
         newPost(){
             if (this.newPostText.length < 3){
@@ -77,7 +104,7 @@ export default {
             newPost.liked = [];
             newPost.disliked = [];
             newPost.user = this.$store.getters.user.id;
-            
+
             this.$store.dispatch('newPost', newPost)
                 .then(() => {
                     this.sumbitStatus = "ok";
@@ -121,7 +148,11 @@ export default {
         return {
             newPostText: "",
             newPostImages: [],
+            userAvatarImageURLs: []
         }
+    },
+    beforeMount() {
+        this.loadImageURLs()
     }
 }
 </script>
@@ -159,6 +190,7 @@ export default {
 }
 .post-author-photo-block img{
     margin-right: .5rem;
+    border-radius: 25px;
 }
 .post-text{
     overflow-wrap: break-word;

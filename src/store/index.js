@@ -4,10 +4,12 @@ import Vuex from 'vuex';
 import user from './user'
 import post from './post'
 import common from './common'
+import file from './file'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+    namespaced: true,
     state: {
         
     },
@@ -23,6 +25,7 @@ export default new Vuex.Store({
     modules: {
         common,
         user,
-        post
+        post,
+        file
     }
 })
