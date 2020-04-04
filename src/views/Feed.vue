@@ -194,14 +194,18 @@ export default {
         return {
             newPostText: "",
             newPostImages: [],
-            userAvatarImageURLs: []
+            userAvatarImageURLs: [],
+            updateInterval: null
         }
     },
     beforeMount() {
         this.loadImageURLs()
     },
+    beforeDestroy() {
+        clearInterval(this.updateInterval)
+    },
     mounted() {
-        setInterval(() => this.$store.dispatch('loadPosts', {target: "feed"}), 30000)
+        this.updateInterval = setInterval(() => { this.$store.dispatch('updatePosts', {target: "feed"}); console.log("Данные подгружены...") }, 10000)
     }
 }
 </script>

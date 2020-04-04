@@ -34,21 +34,76 @@ export default {
                     let p = posts[key]
                     if(!p.target)
                         p.target = "feed"
+                    if(!p.type)
+                        p.type = "post"
                     if(p.target === target || target === "feed"){
-                        postsArray.push(
-                            new Post(
-                                p.text,
-                                p.dateTimeAdded,
-                                p.images,
-                                p.edited,
-                                p.liked,
-                                p.disliked,
-                                p.user,
-                                p.type,
-                                p.target,
-                                key
-                            )
-                        )
+                        let newPost = new Post()
+                        newPost.text = p.text;
+                        newPost.dateTimeAdded = p.dateTimeAdded;
+                        newPost.images = p.images;
+                        newPost.edited = p.edited;
+                        newPost.liked = p.liked;
+                        newPost.disliked = p.disliked;
+                        newPost.user = p.user;
+                        newPost.type = p.type;
+                        newPost.target = p.target;
+                        newPost.id = key;
+                        newPost.showComment = false;
+
+                        postsArray.push(newPost)
+                    }
+                })
+                commit('loadPosts', postsArray)
+                commit('setLoading', false)
+            }
+            catch(error){
+                commit('setLoading', false)
+                commit('setError', error.message)
+                let message = "";
+                switch(error.message){
+                    case "The email address is already in use by another account.":
+                        message = "Данный email-адрес уже используется другим аккаунтом."
+                        break;
+                    default: 
+                        message = error.message; 
+                        break;
+                }
+                Message.error(message);
+                throw error
+            }
+        },
+        async updatePosts ({commit, getters}, {target}){
+            commit('clearError')
+            commit('setLoading', true)
+            try{
+                const post = await firebase.database().ref('posts').once('value')
+                const posts = post.val()
+                const postsArray = []
+                Object.keys(posts).forEach(key => {
+                    let p = posts[key]
+                    if(!p.target)
+                        p.target = "feed"
+                    if(!p.type)
+                        p.type = "post"
+                    if(p.target === target || target === "feed"){
+                        let newPost = new Post()
+                        newPost.text = p.text;
+                        newPost.dateTimeAdded = p.dateTimeAdded;
+                        newPost.images = p.images;
+                        newPost.edited = p.edited;
+                        newPost.liked = p.liked;
+                        newPost.disliked = p.disliked;
+                        newPost.user = p.user;
+                        newPost.target = p.target;
+                        newPost.type = p.type;
+                        newPost.id = key;
+                        let samePost = getters.getPosts.filter(p => p.id == key)[0];
+                        if(samePost == undefined)
+                            newPost.showComment = false;
+                        else
+                            newPost.showComment = samePost.showComment;
+
+                        postsArray.push(newPost)
                     }
                 })
                 commit('loadPosts', postsArray)
