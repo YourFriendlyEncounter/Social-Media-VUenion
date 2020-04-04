@@ -9,7 +9,7 @@ import EditProfile from './views/EditPage.vue'
 
 export default new Router({
     mode: "history",
-    base: "/Social-Media/",
+    base: "/Social-Media-VUenion/",
     routes: [
         {
             path: "/feed",

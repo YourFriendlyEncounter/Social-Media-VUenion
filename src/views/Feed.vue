@@ -260,7 +260,6 @@ export default {
 .post-delete:hover{
     opacity: 1;
 }
-
 .post-text{
     overflow-wrap: break-word;
 }
