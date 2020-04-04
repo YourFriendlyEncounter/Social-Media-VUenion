@@ -11,49 +11,47 @@
         <div v-for="post in getPosts" :key="post.id" 
         class="container-white post-generic">
             <div class="post-author-info" >
-                <div class="post-author-photo-block">
-                    <img :src="getImageURL(post.user).link" width="48" height="48">
+                <div style="display: flex; align-items: center;">
+                    <div class="post-author-photo-block">
+                        <img :src="getImageURL(post.user).link" width="48" height="48">
+                    </div>
+                    <div class="post-author-name-date-block">
+                        <router-link 
+                        class="link-user"
+                        :to="{ name: 'UserProfile', params: { id: post.user }}"> 
+                            {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
+                        </router-link>
+                        <p> {{ getRelativeDate(post.dateTimeAdded) }} </p>
+                    </div>
                 </div>
-                <div class="post-author-name-date-block">
-                    <router-link 
-                    class="link-user"
-                    :to="{ name: 'UserProfile', params: { id: post.user }}"> 
-                        {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
-                    </router-link>
-                    <p> {{ getRelativeDate(post.dateTimeAdded) }} </p>
-                </div>
+                <a 
+                href="#"
+                v-if="getUser.id == post.user || isUserAdmin" 
+                class="post-delete"
+                @click="deletePostOrComment(post)">X</a>
             </div>
             <p class="post-text">{{ post.text }}</p>
             <hr>
-            <Rating :post="post" />
+            <Rating :post="post" :showComment="true" />
             <div class="post-comment-section">
                 <!--Комментарии-->
                 <hr>
-                <div class="post-comment" v-for="comment in getComments(post.id)" :key="comment.id">
-                    <div class="post-comment-inner">
-                        <a 
-                        href="#"
-                        v-if="getUser.id == comment.user" 
-                        class="post-comment-delete"
-                        @click="deleteComment(comment)">X</a>
-                        <div class="post-author-photo-block">
-                            <img :src="getImageURL(comment.user).link" width="32" height="32">
-                        </div>
-                        <div class="post-author-name-date-block">
-                            <router-link 
-                            class="link-user"
-                            :to="{ name: 'UserProfile', params: { id: comment.user }}"> 
-                                {{ getAuthorById(comment.user).name }} {{ getAuthorById(comment.user).lastName }}
-                            </router-link>
-                            <p> {{ getRelativeDate(comment.dateTimeAdded) }} </p>
-                        </div>
-                        <p style="margin-left: 0.5rem; max-width: 70%;">{{ comment.text }}</p>
-                    </div>
-                    <div>
-                    <Rating :post="comment" />
-                    </div>
-                </div>
-                <NewComment v-if="checkUser" :post="post" :userImage="getImageURL(getUser.id).link" />
+                <Comment 
+                v-for="comment in getComments(post.id)" 
+                :key="comment.id" 
+                :comment="comment"
+                :deletePostOrComment="deletePostOrComment"
+                :getImageURL="getImageURL"
+                :getAuthorById="getAuthorById"
+                :getRelativeDate="getRelativeDate"
+                :isUserAdmin="isUserAdmin" 
+                :isReply="false" />
+
+                <NewComment 
+                v-if="checkUser && post.showComment" 
+                :post="post" 
+                :userImage="getImageURL(getUser.id).link" 
+                />
             </div>
         </div>
     </div>
@@ -65,11 +63,13 @@ import Message from 'vue-m-message';
 import Rating from '../components/Rating'
 import NewComment from '../components/NewComment'
 import firebase from 'firebase/app'
+import Comment from '../components/Comment'
 
 export default {
     components: {
         Rating,
-        NewComment
+        NewComment,
+        Comment
     },
     computed: {
         getAuthors() {
@@ -83,6 +83,9 @@ export default {
         },
         getPosts() {
             return this.$store.getters.getPosts.slice().filter(p => p.type == "post" && p.target == "feed").reverse()
+        },
+        isUserAdmin() {
+            return this.$store.getters.getUserInfo.isAdmin;
         }
     },
     methods: {
@@ -179,8 +182,12 @@ export default {
         getComments(postID){
             return this.$store.getters.getPosts.slice().filter(p => p.type == "comment" && p.target == postID);
         },
-        deleteComment(comment){
-            this.$store.dispatch('deletePost', comment)
+        deletePostOrComment(post){
+            let message;
+            post.type == "comment" ? message = "комментарий" : message = "пост";
+            if(confirm("Вы уверены, что хотите удалить этот " + message + "? Это действие нельзя будет отменить.")){
+                this.$store.dispatch('deletePost', post)
+            }
         }
     },
     data(){
@@ -192,6 +199,9 @@ export default {
     },
     beforeMount() {
         this.loadImageURLs()
+    },
+    mounted() {
+        setInterval(() => this.$store.dispatch('loadPosts', {target: "feed"}), 30000)
     }
 }
 </script>
@@ -222,10 +232,12 @@ export default {
     margin-bottom: 1rem;
     padding: 0.25rem 0.25rem;
     text-align: left;
+    transition: 1s;
 }
 .post-author-info{
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 .post-author-photo-block img{
     margin-right: .5rem;
@@ -235,26 +247,17 @@ export default {
     font-size: 80%;
     color: gray;
 }
-.post-text{
-    overflow-wrap: break-word;
-}
-.post-comment-inner{
-    display: flex;
-}
-.post-comment{
-    display: flex;
-    justify-content: space-between;
-    margin-left: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-.post-comment-delete{
-    margin-top: 0.5rem;
-    margin-left: -1.25rem;
-    margin-right: 1.25rem;
+.post-delete{
     width: 0;
     opacity: 0.4;
+    margin-right: 1rem;
+    margin-top: -1.4rem;
 }
-.post-comment-delete:hover{
+.post-delete:hover{
     opacity: 1;
+}
+
+.post-text{
+    overflow-wrap: break-word;
 }
 </style>

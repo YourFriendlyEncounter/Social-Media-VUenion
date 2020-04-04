@@ -3,14 +3,20 @@ import App from './App.vue'
 
 import router from './router'
 
+// Vuex
 import Vuex from 'vuex'
 import store from './store'
 Vue.use(Vuex);
 
+// Vue message
 import Message from 'vue-m-message'
 import 'vue-m-message/dist/index.css'
 Vue.use(Message) // will mount `Vue.prototype.$message`
 
+// Vue confirm dialog
+
+
+// Firebase 
 import firebase from 'firebase/app'
 import 'firebase/auth' 
 import 'firebase/database'

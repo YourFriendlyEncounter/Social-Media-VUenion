@@ -4,7 +4,7 @@
     <div id="main-content">
       <LeftSideBar v-if="checkUser" />
       <div id="main-content-center">
-        <router-view :key="$route.fullPath" />
+        <router-view :key="$route.fullPath + '/' + $store.getters.getComponentKey" />
       </div>
       <RightSideBar v-if="checkUser" />
     </div>
@@ -44,17 +44,17 @@ export default {
     RightSideBar,
     Loading,
   },
-    computed: {
-        checkUser(){
-            return this.$store.getters.checkUser
-        },
-        getUser(){
-            return this.$store.getters.user
-        },
-        isLoading(){
-          return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending //|| this.$store.getters.isLoadingFiles
-        }
-    }
+  computed: {
+      checkUser() {
+          return this.$store.getters.checkUser
+      },
+      getUser() {
+          return this.$store.getters.user
+      },
+      isLoading() {
+        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending //|| this.$store.getters.isLoadingFiles
+      },
+  }
 }
 </script>
 

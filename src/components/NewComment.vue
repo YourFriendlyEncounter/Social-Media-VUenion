@@ -1,5 +1,5 @@
 <template>
-    <div class="post-comment-new">
+    <div class="post-comment-new" :class="{ 'is-reply-newcomment': isReply }">
         <div class="post-commment-image-block">
             <img :src="userImage" width="32" height="32">
         </div>
@@ -17,7 +17,8 @@ import Message from 'vue-m-message';
 export default {
     props: {
         post: Object,
-        userImage: String
+        userImage: String,
+        isReply: Boolean
     },
     methods: {
         newComment(post){
@@ -53,9 +54,12 @@ export default {
 </script>
 
 <style scoped>
-
+.is-reply-newcomment{
+    margin-left: 3.5rem;
+}
 .post-comment-new{
     display: flex;
+    margin-top: 0.5rem;
 }
 .post-commment-image-block img{
     border-radius: 25px;

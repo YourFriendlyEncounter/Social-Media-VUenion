@@ -11,16 +11,20 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     namespaced: true,
     state: {
-        
+        componentKey: 0
     },
     getters: {
-
+        getComponentKey(state) {
+            return state.componentKey
+        }
     },
     mutations: {
 
     },
     actions: {
-
+        changeComponentKey({state}) {
+            state.componentKey++;
+        }
     },
     modules: {
         common,

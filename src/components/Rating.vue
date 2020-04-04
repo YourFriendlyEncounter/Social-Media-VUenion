@@ -3,23 +3,33 @@
             <div class="div-likes-dislikes">
                 <p class="p-difference">{{ getDifference }}</p>
                 <div class="tooltip">
-                    <h2>{{ getRatesCount(post.liked) }}</h2>
+                    <div class="div-tooltip-inside">
+                        <h2>{{ getRatesCount(post.liked) }}</h2>
+                    </div>
                     <button class="button-transparent-clickable button-like" @click="likePost(post)" :class="{ 'is-post-liked': isPostLiked(post) }">
                         <img src="../assets/like.png" width="24">
                     </button>
                 </div>
                 <div class="tooltip">
-                    <h2>{{ getRatesCount(post.disliked) }}</h2>
+                    <div class="div-tooltip-inside">
+                        <h2>{{ getRatesCount(post.disliked) }}</h2>
+                    </div>
                     <button class="button-transparent-clickable button-dislike" @click="dislikePost(post)" :class="{ 'is-post-disliked': isPostDisliked(post) }">
                         <img src="../assets/dislike.png" width="24">
                     </button>
                 </div>
+                <button 
+                v-if="showComment"
+                class="button-transparent-clickable button-comment" 
+                :class="{ 'is-post-liked': post.showComment == true }"
+                @click="showCommentClicked" >
+                    <img src="../assets/chat.png" width="24">
+                </button>
             </div>
     </div>
 </template>
 
 <script>
-import $ from 'jquery'
 import Message from 'vue-m-message';
 
 export default {
@@ -72,6 +82,13 @@ export default {
             let userID = this.getUser.id
             this.$store.dispatch('changeDislikes', {post, userID, isToRemove})
         },
+        showCommentClicked(){
+            if(this.post.showComment == undefined){
+                this.post.showComment = false;
+            }
+            this.post.showComment = !this.post.showComment;
+            this.$store.dispatch('changeComponentKey')
+        }
     },
     computed: {
         getUser() {
@@ -85,15 +102,11 @@ export default {
             if(rating > 0)
                 rating = "+"+rating;
             return rating;
-        },
+        }
     },
     props: {
-        post: Object
-    },
-    mounted() {
-        $(".button-like").hover(function(){
-            
-        })
+        post: Object,
+        showComment: Boolean,
     }
 }
 </script>
@@ -121,35 +134,40 @@ export default {
     border: none;
     border-radius: 5px;
 }
+.button-like:hover{
+    background-color: #e6f5ff;
+}
+.button-dislike:hover{
+    background-color: #ffe7e7;
+}
+.button-comment:hover{
+    background-color: #e6f5ff;
+}
+.div-tooltip-inside{
+    position: absolute;
+    right: 46px;
+    bottom: 58px;
+    opacity: 0;
+
+    transition: .2s;
+    padding-top: 0.5rem;
+    padding-bottom: 0;
+}
 .tooltip{
     position: relative;
 }
-.tooltip h2{
+.div-tooltip-inside h2{
     position: absolute;
     text-align: center;
-    right: -8px;
     border-radius: 3px;
-    width: 4rem;
     color: white;
-
-    opacity: 0;
-    bottom: 24px;
+    width: 2.5rem;
+    
     transition: .2s;
     background-color:rgba(126, 126, 126, 0.9);
     box-shadow: 2px 2px 4px #ccc;
 }
-.button-like:hover{
-    background-color: #e6f5ff;
-}
-.tooltip:hover{
-    transition: .2s;
-}
-.tooltip:hover h2{
-    transition: .2s;
-    opacity: 1;
-    bottom: 34px;
-}
-.tooltip h2::after{
+.div-tooltip-inside h2::after{
     content: "";
     position: absolute;
     top: 100%;
@@ -159,7 +177,10 @@ export default {
     border-style: solid;
     border-color: rgba(126, 126, 126, 0.9) transparent transparent transparent;
 }
-.button-dislike:hover{
-    background-color: #ffe7e7;
+.tooltip:hover .div-tooltip-inside{
+    transition: .2s;
+    opacity: 1;
+    padding-top: 0;
+    padding-bottom: 0.5rem;
 }
 </style>

@@ -108,15 +108,21 @@ export default {
                 throw error
             }
         },
-        async deletePost({commit}, payload){
+        async deletePost({commit, getters, dispatch}, payload){
             commit('clearError')
             commit('setLoading', true)
             try{
                 await firebase.database()
                 .ref('posts/'+payload.id)
                 .remove();
-
+                
                 commit("removePost", payload);
+
+                let postTargets = getters.getPosts.filter(p => p.target == payload.id);
+                for(let i = 0; i < postTargets.length; i++){
+                    dispatch('deletePost', postTargets[i])
+                }
+                
                 if(payload.type == "comment")
                     Message.success("Комментарий удалён.");
                 else if(payload.type == "post")
