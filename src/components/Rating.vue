@@ -6,7 +6,7 @@
                     <div class="div-tooltip-inside">
                         <h2>{{ getRatesCount(post.liked) }}</h2>
                     </div>
-                    <button class="button-transparent-clickable button-like" @click="likePost(post)" :class="{ 'is-post-liked': isPostLiked(post) }">
+                    <button class="button-transparent-clickable button-like" @click="toggleLikePost(post)" :class="{ 'is-post-liked': isPostLiked(post) }">
                         <img src="../assets/like.png" width="24">
                     </button>
                 </div>
@@ -14,12 +14,12 @@
                     <div class="div-tooltip-inside">
                         <h2>{{ getRatesCount(post.disliked) }}</h2>
                     </div>
-                    <button class="button-transparent-clickable button-dislike" @click="dislikePost(post)" :class="{ 'is-post-disliked': isPostDisliked(post) }">
+                    <button class="button-transparent-clickable button-dislike" @click="toggleDislikePost(post)" :class="{ 'is-post-disliked': isPostDisliked(post) }">
                         <img src="../assets/dislike.png" width="24">
                     </button>
                 </div>
                 <button 
-                v-if="showComment"
+                v-if="canAddComment"
                 class="button-transparent-clickable button-comment" 
                 :class="{ 'is-post-liked': post.showComment == true }"
                 @click="showCommentClicked" >
@@ -34,7 +34,6 @@ import Message from 'vue-m-message';
 
 export default {
     methods: {
-        // Rating
         getRatesCount(postRates){
             if(postRates == undefined)
                 return 0;
@@ -50,35 +49,31 @@ export default {
                 return false;
             return post.disliked.includes(this.getUser.id);
         },
-        likePost(post){
+        toggleLikePost(post){
+            if(this.isLoadingLikes)
+                return;
             if(!this.checkUser){
                 Message.error("Авторизуйтесь, чтобы оставлять отзывы.")
                 return;
             }
             if(this.isPostDisliked(post)){
-                this.dislikePost(post)
+                this.toggleDislikePost(post)
             }
-            let isToRemove = false;
-            if(this.isPostLiked(post))
-                isToRemove = true;
-            else
-                isToRemove = false;
+            let isToRemove = this.isPostLiked(post)
             let userID = this.getUser.id
             this.$store.dispatch('changeLikes', {post, userID, isToRemove})
         },
-        dislikePost(post) {
+        toggleDislikePost(post) {
+            if(this.isLoadingLikes)
+                return;
             if(!this.checkUser){
                 Message.error("Авторизуйтесь, чтобы оставлять отзывы.")
                 return;
             }
             if(this.isPostLiked(post)){
-                this.likePost(post)
+                this.toggleLikePost(post)
             }
-            let isToRemove = false;
-            if(this.isPostDisliked(post))
-                isToRemove = true;
-            else
-                isToRemove = false;
+            let isToRemove = this.isPostDisliked(post)
             let userID = this.getUser.id
             this.$store.dispatch('changeDislikes', {post, userID, isToRemove})
         },
@@ -102,11 +97,14 @@ export default {
             if(rating > 0)
                 rating = "+"+rating;
             return rating;
+        },
+        isLoadingLikes() {
+            return this.$store.getters.isLoadingLikes;
         }
     },
     props: {
         post: Object,
-        showComment: Boolean,
+        canAddComment: Boolean,
     }
 }
 </script>

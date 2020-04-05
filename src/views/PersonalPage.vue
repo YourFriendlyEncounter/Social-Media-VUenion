@@ -21,8 +21,6 @@
 </template>
 
 <script>
-//import $ from 'jquery';
-import firebase from 'firebase/app'
 export default {
     computed: {
         getCurrentPageUser() {
@@ -51,7 +49,7 @@ export default {
         editProfile() {
             this.$router.push({ name: "EditProfile", params: { id: this.id }})
         },
-        async getSetImage(){
+        async findImageURL(){
             if(!this.user.image)
             {
                 let images = require.context('../assets/', false, /\.svg$/);
@@ -59,12 +57,19 @@ export default {
                 .setAttribute('src', images("./anonymous.svg"))
             }
             else{
-                let link = 'userAvatars/' + this.id;
-                let newLink = await firebase.storage().ref().child(link)
-                .getDownloadURL().then((url) => { return url });
-                
-                document.getElementById("img-avatar")
-                .setAttribute('src', newLink)
+                let URL = this.$store.getters.getLoadedUserAvatarURLs.filter(u => u.id == this.user.id)
+                // Если ссылка уже была загружена ранее.
+                if(URL[0]){
+                    document.getElementById("img-avatar")
+                    .setAttribute('src', URL[0].link)
+                }
+                else{
+                    let link = 'userAvatars/' + this.id;
+                    let newLink = await this.$store.dispatch('getImage', link)
+                    
+                    document.getElementById("img-avatar")
+                    .setAttribute('src', newLink)
+                }
             }
         }
     },
@@ -80,7 +85,7 @@ export default {
         this.user = this.getCurrentPageUser
     },
     mounted() {
-        this.getSetImage()
+        this.findImageURL()
     }
 }
 </script>

@@ -4,7 +4,7 @@
     <div id="main-content">
       <LeftSideBar v-if="checkUser" />
       <div id="main-content-center">
-        <router-view :key="$route.fullPath + '/' + $store.getters.getComponentKey" />
+        <router-view :key="$route.fullPath" />
       </div>
       <RightSideBar v-if="checkUser" />
     </div>
@@ -25,7 +25,7 @@
   </div>
   <div v-else id="div-loading">
     <div id="loading-inside">
-      <Loading />
+      <Loading :displayWhatLoading="false" />
     </div>
   </div>
 </template>
@@ -52,7 +52,7 @@ export default {
           return this.$store.getters.user
       },
       isLoading() {
-        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending //|| this.$store.getters.isLoadingFiles
+        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending || this.$store.getters.isLoadingFiles
       },
   }
 }
@@ -74,7 +74,7 @@ body, h1, h2, h4, p{
   justify-content: center;
   align-items: center;
 }
-#app {
+body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

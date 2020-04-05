@@ -62,10 +62,11 @@ export default {
             if(!this.user.birthDate){
                 this.user.birthDate = new Date()
             }
-            let userID = this.user.id;
             let file = this.imageToSend
+            let link = "userAvatars/" + this.user.id;
+
             if(this.imageToSend != null){
-                this.$store.dispatch('sendFile', { file, userID })
+                this.$store.dispatch('sendFile', { link, file })
                 this.user.image = true
             }
             this.$store.dispatch('changeUserInfo', this.user)

@@ -9,7 +9,7 @@
                 @click="deletePostOrComment(comment)">X</a>
 
                 <div class="post-author-photo-block">
-                    <img :src="getImageURL(comment.user).link" width="32" height="32">
+                    <img :src="getUserImageURL(comment.user).link" width="32" height="32">
                 </div>
                 <div class="post-author-name-date-block">
                         <router-link 
@@ -22,7 +22,7 @@
                 <p style="margin-left: 0.5rem; max-width: 70%;">{{ comment.text }}</p>
             </div>
             <div>
-                <Rating :post="comment" :showComment="!isReply" />
+                <Rating :post="comment" :canAddComment="!isReply" />
             </div>
         </div>
 
@@ -32,7 +32,7 @@
             v-for="reply in getReplies" :key="reply.id"
             :comment="reply"
             :deletePostOrComment="deletePostOrComment"
-            :getImageURL="getImageURL"
+            :getUserImageURL="getUserImageURL"
             :getAuthorById="getAuthorById"
             :getRelativeDate="getRelativeDate"
             :isUserAdmin="isUserAdmin" 
@@ -41,8 +41,9 @@
         <NewComment 
         v-if="checkUser && comment.showComment" 
         :post="comment" 
-        :userImage="getImageURL(getUser.id).link" 
-        :isReply="true"/>
+        :userImage="getUserImageURL(getUser.id).link" 
+        :isReply="true"
+        :field="comment.field"/>
     </div>
 </template>
 
@@ -72,11 +73,11 @@ export default {
     props: {
         comment: Object,
         deletePostOrComment: Function,
-        getImageURL: Function,
+        getUserImageURL: Function,
         getAuthorById: Function,
         getRelativeDate: Function,
         isUserAdmin: Boolean,
-        isReply: Boolean
+        isReply: Boolean,
     }
 }
 </script>

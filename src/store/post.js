@@ -1,12 +1,12 @@
 import firebase from 'firebase/app'
 
-import Post from './post_help'
 import Message from 'vue-m-message'
 
 export default {
     state: {
         posts: [],
         loadingLikes: false,
+        loadingPosts: false
     },
     mutations: {
         loadPosts (state, payload) {
@@ -19,11 +19,14 @@ export default {
             state.posts = state.posts.filter(p => p.id != payload.id)
         },
         setLoadingLikes(state, payload){
-            state.loading = payload
+            state.loadingLikes = payload
+        },
+        setLoading(state, payload){
+            state.loadingPosts = payload
         }
     },
     actions: {
-        async loadPosts ({commit}, {target}){
+        async loadPosts ({commit}, {field}){
             commit('clearError')
             commit('setLoading', true)
             try{
@@ -32,12 +35,18 @@ export default {
                 const postsArray = []
                 Object.keys(posts).forEach(key => {
                     let p = posts[key]
-                    if(!p.target)
-                        p.target = "feed"
+
                     if(!p.type)
                         p.type = "post"
-                    if(p.target === target || target === "feed"){
-                        let newPost = new Post()
+                    if(!p.field)
+                        p.field = "feed"
+                    if(!p.target)
+                        p.target = "feed"
+                    if(!p.images)
+                        p.images = false
+
+                    if(p.field === field){
+                        let newPost = {}
                         newPost.text = p.text;
                         newPost.dateTimeAdded = p.dateTimeAdded;
                         newPost.images = p.images;
@@ -45,8 +54,11 @@ export default {
                         newPost.liked = p.liked;
                         newPost.disliked = p.disliked;
                         newPost.user = p.user;
+
                         newPost.type = p.type;
                         newPost.target = p.target;
+                        newPost.field = p.field;
+
                         newPost.id = key;
                         newPost.showComment = false;
 
@@ -72,7 +84,7 @@ export default {
                 throw error
             }
         },
-        async updatePosts ({commit, getters}, {target}){
+        async updatePosts ({commit, getters}, {field}){
             commit('clearError')
             commit('setLoading', true)
             try{
@@ -81,12 +93,18 @@ export default {
                 const postsArray = []
                 Object.keys(posts).forEach(key => {
                     let p = posts[key]
-                    if(!p.target)
-                        p.target = "feed"
+
                     if(!p.type)
                         p.type = "post"
-                    if(p.target === target || target === "feed"){
-                        let newPost = new Post()
+                    if(!p.field)
+                        p.field = "feed"
+                    if(!p.target)
+                        p.target = ""
+                    if(!p.images)
+                        p.images = false
+                        
+                    if(p.field === field){
+                        let newPost = {}
                         newPost.text = p.text;
                         newPost.dateTimeAdded = p.dateTimeAdded;
                         newPost.images = p.images;
@@ -94,8 +112,11 @@ export default {
                         newPost.liked = p.liked;
                         newPost.disliked = p.disliked;
                         newPost.user = p.user;
-                        newPost.target = p.target;
+
+                        newPost.target = p.target; 
                         newPost.type = p.type;
+                        newPost.field = p.field;
+
                         newPost.id = key;
                         let samePost = getters.getPosts.filter(p => p.id == key)[0];
                         if(samePost == undefined)
@@ -129,21 +150,25 @@ export default {
             commit('clearError')
             commit('setLoading', true)
             try{
-                const newPost = new Post(
-                    payload.text,
-                    payload.dateTimeAdded,
-                    payload.images,
-                    payload.edited,
-                    payload.liked,
-                    payload.disliked,
-                    getters.user.id,
-                    payload.type,
-                    payload.target,
-                )
+                const newPost = {}
+                newPost.text = payload.text;
+                newPost.dateTimeAdded = payload.dateTimeAdded;
+                newPost.images = payload.images;
+                newPost.edited = payload.edited;
+                newPost.liked = payload.liked;
+                newPost.disliked = payload.disliked;
+                newPost.user = getters.user.id;
+
+                newPost.type = payload.type;
+                newPost.target = payload.target;
+                newPost.field = payload.field;
+
+                newPost.showComment = false;
+
                 const post = await firebase.database()
                 .ref('posts')
                 .push(newPost)
-                
+
                 if(payload.type == "comment")
                     Message.success("Комментарий добавлен.");
                 else if(payload.type == "post")
@@ -153,8 +178,8 @@ export default {
                     ...newPost,
                     id: post.key
                 })
-
                 commit('setLoading', false)
+                return post.key;
             }
             catch(error){
                 commit('setLoading', false)
@@ -171,6 +196,17 @@ export default {
                 .ref('posts/'+payload.id)
                 .remove();
                 
+                for(let i = 0; i < 10; i++){
+                    try{
+                        await firebase.storage()
+                        .ref('posts/'+payload.id+"/"+i)
+                        .delete();
+                    }
+                    catch(error){
+                        break;
+                    }
+                }
+
                 commit("removePost", payload);
 
                 let postTargets = getters.getPosts.filter(p => p.target == payload.id);
@@ -195,9 +231,7 @@ export default {
                 .set(payload);
             commit('setLoading', false)
         },
-        async changeLikes({commit, getters}, {post, userID, isToRemove}){
-            if(getters.isLoadingLikes)
-                return;
+        async changeLikes({commit}, {post, userID, isToRemove}){
             commit('setLoadingLikes', true)
             let newLiked = [];
             if(!post.liked)
@@ -205,7 +239,7 @@ export default {
             if(!post.disliked)
                 post.disliked = [];
             if(!post.images)
-                post.images = [];
+                post.images = false;
             if(!isToRemove){
                 post.liked.push(userID)
                 newLiked = post.liked;
@@ -219,9 +253,7 @@ export default {
                 .set(newLiked);
             commit('setLoadingLikes', false)
         },
-        async changeDislikes({commit, getters}, {post, userID, isToRemove}){
-            if(getters.isLoadingLikes)
-                return;
+        async changeDislikes({commit}, {post, userID, isToRemove}){
             commit('setLoadingLikes', true)
             let newDisliked = [];
             if(!post.liked)
@@ -229,7 +261,7 @@ export default {
             if(!post.disliked)
                 post.disliked = [];
             if(!post.images)
-                post.images = [];
+                post.images = false;
             if(!isToRemove){
                 post.disliked.push(userID)
                 newDisliked = post.disliked;
@@ -250,6 +282,9 @@ export default {
         },
         isLoadingLikes(state){
             return state.loadingLikes
+        },
+        isLoadingPosts(state){
+            return state.loadingPosts
         },
     }
 }

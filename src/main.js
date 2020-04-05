@@ -48,7 +48,6 @@ new Vue({
         this.$store.dispatch('loggedUser', user)
       }
       else this.$store.commit('setLoadingCurrentUser', false)
-      this.$store.dispatch('loadPosts', {target: "feed"});
       this.$store.dispatch('loadUserInfos');
     })
   }

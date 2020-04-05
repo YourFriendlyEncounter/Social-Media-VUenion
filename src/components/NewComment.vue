@@ -18,7 +18,8 @@ export default {
     props: {
         post: Object,
         userImage: String,
-        isReply: Boolean
+        isReply: Boolean,
+        field: String
     },
     methods: {
         newComment(post){
@@ -27,7 +28,6 @@ export default {
                 Message.error("Нельзя опубликовать комментарий, длиной менее 3 символов.")
                 return;
             }
-            this.$refs.commentText.value = ""
             let newPost = new Post();
             newPost.text = commentText;
             newPost.dateTimeAdded = (new Date()).toString();
@@ -38,12 +38,14 @@ export default {
             newPost.user = this.$store.getters.user.id;
             newPost.type = "comment";
             newPost.target = post.id;
+            newPost.field = this.field;
 
             this.$store.dispatch('newPost', newPost)
                 .then(() => {
                     this.sumbitStatus = "ok";
                     this.$router.push('/')
-                    Message.success("Пост опубликован.")
+                    this.$refs.commentText.value = ""
+                    post.showComment = false;
                 })
                 .catch(err => {
                     this.sumbitStatus = err.message

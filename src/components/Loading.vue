@@ -1,6 +1,31 @@
 <template>
+  <div>
+    <h2 v-if="displayWhatLoading">{{ getWhatLoading }}</h2>
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+  </div>
 </template>
+
+<script>
+export default {
+  computed: {
+    getWhatLoading() {
+      let text = "";
+      if(this.$store.getters.isLoadingFiles)
+        text += "Загружаются файлы...\n"
+      if(this.$store.getters.isSending)
+        text += "Отправляются изображения...\n"
+      if(this.$store.getters.getLoadingUserInfos)
+        text += "Загружаются пользователи...\n"
+      if(this.$store.getters.isLoadingPosts)
+        text += "Загружаются посты...\n"
+      return text;
+    }
+  },
+  props: {
+    displayWhatLoading: Boolean
+  }
+}
+</script>
 
 <style scoped>
 .lds-spinner {
