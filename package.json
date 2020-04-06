@@ -13,6 +13,7 @@
     "jquery": "^3.4.1",
     "vue": "^2.6.11",
     "vue-confirm-dialog": "^0.2.5",
+    "vue-gallery": "^2.0.1",
     "vue-m-message": "^3.0.0",
     "vue-router": "^3.1.6",
     "vue2-datepicker": "^3.4.1",

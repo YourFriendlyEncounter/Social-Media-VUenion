@@ -52,7 +52,7 @@ export default {
           return this.$store.getters.user
       },
       isLoading() {
-        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending || this.$store.getters.isLoadingFiles
+        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos
       },
   }
 }

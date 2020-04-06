@@ -2,6 +2,7 @@
     <div id="edit-profile">
         <h1 id="h-edit-profile">Редактировать профиль</h1>
         <form id="form-edit-profile-main" class="form-generic container-generic" @submit.prevent="submitEdit">
+            <h2>Основная информация</h2>
             <div class="simple-flex input-text" style="margin-bottom: 1rem;">
                 <p style="margin-right: .5rem;">Фото профиля: </p>
                 <input type="file" ref="file" accept="image/jpeg,image/jpg,image/png,image/gif" @change="handleFileUpload()">
@@ -15,6 +16,12 @@
                     :editable="false"
                     :placeholder="'Дата рождения'"/>
             <textarea class="input-text" rows="3" maxlength="3000" id="textarea-about" placeholder="О себе" v-model="user.about"></textarea>
+            <h2>Настройки приватности</h2>
+            <div id="div-privacy-settings">
+                <label><input type="checkbox" v-model="user.allowWallPublications"> Разрешить публикации на стене от других пользователей</label>
+                <label><input type="checkbox" v-model="user.allowCommentsOnWall"> Разрешить комментарии на постах стены</label>
+                <label><input type="checkbox" v-model="user.showDateOfBirth"> Показывать дату рождения на стене</label>
+            </div>
             <div id="div-controls">
                 <button class="custom-button" style="background-color:#ebce59;" @click.prevent="goBack">Отменить</button>
                 <input type="submit" class="custom-button" style="background-color:#42cc8c;">
@@ -39,10 +46,7 @@ export default {
     },
     methods: {
         goBack() {
-            this.$router.push({ name: "Feed" })
-        },
-        sayUnimplemented() {
-            Message.error('Извините, пока что эта функция недоступна.')
+            this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
         },
         submitEdit() {
             if(this.user.name.length < 3 || this.user.lastName.length < 3){
@@ -54,14 +58,13 @@ export default {
                 return
             }
             if(!this.user.image){
-                this.user.image = "";
+                this.user.image = false;
             }
             if(!this.user.comrades){
                 this.user.comrades = []
             }
-            if(!this.user.birthDate){
-                this.user.birthDate = new Date()
-            }
+            this.user.birthDate = this.user.birthDate.toString()
+
             let file = this.imageToSend
             let link = "userAvatars/" + this.user.id;
 
@@ -70,6 +73,7 @@ export default {
                 this.user.image = true
             }
             this.$store.dispatch('changeUserInfo', this.user)
+            this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
         },
         handleFileUpload() {
             this.imageToSend = this.$refs.file.files[0];
@@ -92,6 +96,9 @@ export default {
 </script>
 
 <style scoped>
+h2{
+    margin: 0.25rem 0 0.5rem 0;
+}
 #h-edit-profile{
     margin-bottom: 1rem;
 }
@@ -108,6 +115,12 @@ export default {
 }
 .custom-button{
     width: 49%;
+}
+#div-privacy-settings{
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 1rem;
 }
 #div-controls{
     display: flex;

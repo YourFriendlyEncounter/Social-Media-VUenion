@@ -1,6 +1,6 @@
 <template>
     <div id="feed">
-        <PostSection :field="'feed'" />
+        <PostSection :field="'feed'" :allowPosting="true" :allowCommentsOnWall="true" />
     </div>
 </template>
 

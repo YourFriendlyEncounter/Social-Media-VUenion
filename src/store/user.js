@@ -39,9 +39,17 @@ export default {
                 let userInfosVal = userInfos.val();
                 const usersArray = []
                 Object.keys(userInfosVal).forEach(key => {
-                    const u = userInfosVal[key]
+                    let u = userInfosVal[key]
+                    if(u.allowWallPublications == undefined)
+                        u.allowWallPublications = false;
+                    if(u.allowCommentsOnWall == undefined)
+                        u.allowCommentsOnWall = true;
+                    if(u.showDateOfBirth == undefined)
+                        u.showDateOfBirth = true;
+                    if(u.birthDate == undefined)
+                        u.birthDate = (new Date()).toString()
 
-                    let newUserInfo = new UserInfo();
+                    let newUserInfo = {}
                     newUserInfo.id = u.id;
                     newUserInfo.comrades = u.comrades;
                     newUserInfo.name = u.name;
@@ -53,6 +61,11 @@ export default {
 
                     newUserInfo.status = u.status;
                     newUserInfo.about = u.about;
+
+                    // Настройки
+                    newUserInfo.allowWallPublications = u.allowWallPublications
+                    newUserInfo.allowCommentsOnWall = u.allowCommentsOnWall
+                    newUserInfo.showDateOfBirth = u.showDateOfBirth
  
                     usersArray.push(newUserInfo)
                 })
@@ -166,7 +179,6 @@ export default {
                 .ref('userInfos/'+payload.id)
                 .set(payload);
                 Message.success("Информация профиля изменена.");
-                Router.push({ name: 'UserProfile', params: { id: payload.id }});
             }
             catch(error){
                 commit('serError', error.message)

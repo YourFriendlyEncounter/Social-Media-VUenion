@@ -23,11 +23,19 @@ export default{
         }
     },
     actions: {
-        async sendFile({commit}, { link, file }){
+        async sendFile({commit}, { link, file, id }){
             commit('setSending', true);
             try{
-                await firebase.storage().ref(link).put(file);
-                Message.success("Файл был успешно загружен!");
+                let image = await firebase.storage().ref(link);
+                await image.put(file);
+                let URL = {
+                    id: id,
+                    link: ""
+                }
+                image.getDownloadURL().then((url) => {
+                    URL.link = url
+                    commit('pushImageURL', URL)
+                })
             }
             catch(error){
                 Message.error(error.message);
@@ -51,17 +59,15 @@ export default{
                 commit('setSending', false);
             }
         },
-        async loadUserAvatarURLs({commit, getters}, {posts}) {
+        async loadUserAvatarURL({commit, getters}, {user}) {
             commit('setLoadingFiles', true)
-            for(let i = 0; i < posts.length; i++){
-                if(!getters.getUserById(posts[i].user).image)
-                    continue;
+            if(user.image){
                 try{
                     let URL = {
-                        id: posts[i].user,
+                        id: user.id,
                         link: ""
                     }
-                    await firebase.storage().ref().child('userAvatars/'+posts[i].user)
+                    await firebase.storage().ref().child('userAvatars/' + user.id)
                     .getDownloadURL().then((url) => { 
                         URL.link = url 
                         if(!getters.getLoadedUserAvatarURLs.some(u => u.id === URL.id))
@@ -69,33 +75,32 @@ export default{
                     });
                 }
                 catch(error){
+                    commit('setLoadingFiles', false)
                     Message.error(error.message)
+                    throw error
                 }
             }
             commit('setLoadingFiles', false)
         },
-        async loadPostImagesURLs({commit}, {posts}){
+        async loadPostImagesURLs({commit}, {post}){
             commit('setLoadingFiles', true)
             try{
-                for(let i = 0; i < posts.length; i++){
-                    const post = posts[i];
-                    firebase.storage()
-                    .ref()
-                    .child('posts/' + post.id)
-                    .listAll()
-                    .then((res) => {
-                        res.items.forEach((itemRef) => {
-                            let URL = {
-                                id: post.id,
-                                link: ""
-                            }
-                            itemRef.getDownloadURL().then((url) => {
-                                URL.link = url
-                                commit('pushImageURL', URL)
-                            })
-                        });
+                firebase.storage()
+                .ref()
+                .child('posts/' + post.id)
+                .listAll()
+                .then((res) => {
+                    res.items.forEach((itemRef) => {
+                        let URL = {
+                            id: post.id,
+                            link: ""
+                        }
+                        itemRef.getDownloadURL().then((url) => {
+                            URL.link = url
+                            commit('pushImageURL', URL)
+                        })
                     });
-                }
+                });
             }
             catch(error){
                 commit('setLoadingFiles', false)

@@ -12,9 +12,10 @@
                     <img :src="getUserImageURL(comment.user).link" width="32" height="32">
                 </div>
                 <div class="post-author-name-date-block">
-                        <router-link 
-                       class="link-user"
-                    :to="{ name: 'UserProfile', params: { id: comment.user }}"> 
+                    <router-link 
+                        class="link-user"
+                        :class="{ 'is-admin-name': getAuthorById(comment.user).isAdmin }"
+                        :to="{ name: 'UserProfile', params: { id: comment.user }}"> 
                         {{ getAuthorById(comment.user).name }} {{ getAuthorById(comment.user).lastName }}
                     </router-link>
                     <p> {{ getRelativeDate(comment.dateTimeAdded) }} </p>
@@ -85,6 +86,9 @@ export default {
 <style scoped>
 .is-reply{
     margin-left: 2rem;
+}
+.is-admin-name{
+    color: rgb(206, 33, 33);
 }
 .post-author-photo-block img{
     margin-right: .5rem;

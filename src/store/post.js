@@ -9,30 +9,27 @@ export default {
         loadingPosts: false
     },
     mutations: {
-        loadPosts (state, payload) {
+        setPosts (state, payload) {
             state.posts = payload
         },
         newPost (state, payload) {
             state.posts.push(payload)
         },
-        removePost(state, payload){
+        removePost(state, payload) {
             state.posts = state.posts.filter(p => p.id != payload.id)
         },
-        setLoadingLikes(state, payload){
-            state.loadingLikes = payload
-        },
-        setLoading(state, payload){
-            state.loadingPosts = payload
+        setLoadingLikes(state, payload) {
+            state.loadingLikes = payload;
         }
     },
     actions: {
-        async loadPosts ({commit}, {field}){
+        async loadPosts ({commit, getters}, {field}){
             commit('clearError')
             commit('setLoading', true)
             try{
                 const post = await firebase.database().ref('posts').once('value')
                 const posts = post.val()
-                const postsArray = []
+                let postsArray = []
                 Object.keys(posts).forEach(key => {
                     let p = posts[key]
 
@@ -60,89 +57,23 @@ export default {
                         newPost.field = p.field;
 
                         newPost.id = key;
-                        newPost.showComment = false;
-
+                        if(getters.getPosts.length > 0){
+                            let samePost = getters.getPosts.find(p => p.id === key);
+                            if(samePost && samePost.showComment)
+                                newPost.showComment = true;
+                            else
+                                newPost.showComment = false;
+                        }
                         postsArray.push(newPost)
                     }
                 })
-                commit('loadPosts', postsArray)
+                commit('setPosts', postsArray)
                 commit('setLoading', false)
             }
             catch(error){
                 commit('setLoading', false)
                 commit('setError', error.message)
-                let message = "";
-                switch(error.message){
-                    case "The email address is already in use by another account.":
-                        message = "Данный email-адрес уже используется другим аккаунтом."
-                        break;
-                    default: 
-                        message = error.message; 
-                        break;
-                }
-                Message.error(message);
-                throw error
-            }
-        },
-        async updatePosts ({commit, getters}, {field}){
-            commit('clearError')
-            commit('setLoading', true)
-            try{
-                const post = await firebase.database().ref('posts').once('value')
-                const posts = post.val()
-                const postsArray = []
-                Object.keys(posts).forEach(key => {
-                    let p = posts[key]
-
-                    if(!p.type)
-                        p.type = "post"
-                    if(!p.field)
-                        p.field = "feed"
-                    if(!p.target)
-                        p.target = ""
-                    if(!p.images)
-                        p.images = false
-                        
-                    if(p.field === field){
-                        let newPost = {}
-                        newPost.text = p.text;
-                        newPost.dateTimeAdded = p.dateTimeAdded;
-                        newPost.images = p.images;
-                        newPost.edited = p.edited;
-                        newPost.liked = p.liked;
-                        newPost.disliked = p.disliked;
-                        newPost.user = p.user;
-
-                        newPost.target = p.target; 
-                        newPost.type = p.type;
-                        newPost.field = p.field;
-
-                        newPost.id = key;
-                        let samePost = getters.getPosts.filter(p => p.id == key)[0];
-                        if(samePost == undefined)
-                            newPost.showComment = false;
-                        else
-                            newPost.showComment = samePost.showComment;
-
-                        postsArray.push(newPost)
-                    }
-                })
-                commit('loadPosts', postsArray)
-                commit('setLoading', false)
-            }
-            catch(error){
-                commit('setLoading', false)
-                commit('setError', error.message)
-                let message = "";
-                switch(error.message){
-                    case "The email address is already in use by another account.":
-                        message = "Данный email-адрес уже используется другим аккаунтом."
-                        break;
-                    default: 
-                        message = error.message; 
-                        break;
-                }
-                Message.error(message);
+                Message.error(error.message);
                 throw error
             }
         },

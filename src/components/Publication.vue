@@ -9,6 +9,7 @@
                     <div class="post-author-name-date-block">
                         <router-link 
                         class="link-user"
+                        :class="{ 'is-admin-name': getAuthorById(post.user).isAdmin }"
                         :to="{ name: 'UserProfile', params: { id: post.user }}"> 
                             {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
                         </router-link>
@@ -33,7 +34,7 @@
                 </div>
             </div>
             <hr>
-            <Rating :post="post" :canAddComment="true" />
+            <Rating :post="post" :canAddComment="allowCommentsOnWall" />
             <div class="post-comment-section">
                 <!--Комментарии-->
                 <div v-if="getComments(post.id).length > 0">
@@ -124,7 +125,8 @@ export default {
         }
     },
     props: {
-        post: Object
+        post: Object,
+        allowCommentsOnWall: Boolean
     },
     computed: {
         getAuthors() {
@@ -152,6 +154,9 @@ export default {
 <style scoped>
 .link-user{
     color: blue;
+}
+.is-admin-name{
+    color: rgb(206, 33, 33);
 }
 .post-generic{
     margin-bottom: 1rem;
@@ -186,17 +191,13 @@ export default {
 }   
 .post-images{
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: stretch;
     align-content: space-between;
     flex-wrap: wrap;
-    max-width: 100%;
 }
 .post-image{
-    margin: 0.5rem;
-    width: 96px;
-    height: 64px;
-    border: 1px solid black;
+    margin: 0.25rem;
     display: flex;
     align-content: center;
 }

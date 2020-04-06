@@ -1,7 +1,7 @@
 <template>
     <div class="post-section">
         <NewPublication 
-        v-if="checkUser"
+        v-if="checkUser && allowPosting"
         :placeholder="'Что интересного можете рассказать?'" 
         :field="field"/>
         <div class="target-publications" 
@@ -9,7 +9,8 @@
             <Publication 
             v-for="post in getPosts" 
             :key="post.id" 
-            :post="post" />
+            :post="post" 
+            :allowCommentsOnWall="allowCommentsOnWall"/>
         </div>
         <Loading v-else :displayWhatLoading="false" />
     </div>
@@ -28,20 +29,21 @@ export default {
     },
     props: {
         field: String,
+        allowPosting: Boolean,
+        allowCommentsOnWall: Boolean
     },
     data() {
         return {
-            updateTimer: null
+            updateTimer: null,
+            imagesAlreadyLoaded: Boolean
         }
     },
     created() {
-        this.loadEverything();
+        if(this.getPosts.length == 0)
+            this.loadEverything();
     },
     beforeDestroy() {
         clearInterval(this.updateTimer)
-    },
-    mounted() {
-        this.updateTimer = setInterval(() => { this.$store.dispatch('updatePosts', {field: this.field}); console.log("Данные подгружены...") }, 10000)
     },
     computed: {
         checkUser() {
@@ -55,24 +57,41 @@ export default {
         },
         getUserAvatarImageURLs() {
             return this.$store.getters.getLoadedUserAvatarURLs;
+        },
+        getLoadedImagesURLs() {
+            return this.$store.getters.getLoadedImagesURLs;
         }
     },
     methods: {
+        getAuthorById(id){
+            return this.$store.getters.getUserById(id)
+        },
         async loadPosts() {
             await this.$store.dispatch('loadPosts', {field: this.field});
         },
-        loadUserAvatars() {
-            this.$store.dispatch('loadUserAvatarURLs', {posts: this.getPosts})
+        loadUserAvatar(userToLoadImagesFor) {
+            this.$store.dispatch('loadUserAvatarURL', {user: userToLoadImagesFor})
         },
-        loadPostImages() {
-            this.$store.dispatch('loadPostImagesURLs', {posts: this.getPosts})
+        loadPostImages(postToLoadImagesFor) {
+            this.$store.dispatch('loadPostImagesURLs', {post: postToLoadImagesFor})
         },
         loadEverything() {
             this.loadPosts().then(() => {
-                if(this.getUserAvatarImageURLs.length == 0){
-                    this.loadUserAvatars(); 
-                    this.loadPostImages();
+                let posts = this.getPosts;
+                for(let i = 0; i < posts.length; i++) {
+                    // Если есть не загруженные картинки
+                    if(posts[i].images == true && !this.getLoadedImagesURLs.some(u => u.id == posts[i].id)){
+                        this.loadPostImages(posts[i]);
+                    }
+                    // Если фото профиля ещё не загружено
+                    if(!this.getUserAvatarImageURLs.some(u => u.id == posts[i].user)) {
+                        let user = this.getAuthorById(posts[i].user);
+                        if(user)
+                            this.loadUserAvatar(user);
+                    }
                 }
+                if(this.updateTimer == null)
+                    this.updateTimer = setInterval(() => { this.loadEverything(); console.log("Данные подгружены для " + this.field) }, 5000)
             });
         }
     },

@@ -43,7 +43,6 @@ export default {
             this.$store.dispatch('newPost', newPost)
                 .then(() => {
                     this.sumbitStatus = "ok";
-                    this.$router.push('/')
                     this.$refs.commentText.value = ""
                     post.showComment = false;
                 })

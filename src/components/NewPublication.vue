@@ -64,10 +64,10 @@ export default {
                         for(let i = 0; i < this.newPostImages.length; i++){
                             let link = "posts/" + key + "/" + i;
                             let file = this.newPostImages[i]
-                            this.$store.dispatch('sendFile', {link, file})
+                            let id = key
+                            this.$store.dispatch('sendFile', {link, file, id})
                         }
                     }
-                    this.$router.push('/')
                     this.newPostText = ""
                     this.newPostImages = []
                 })
