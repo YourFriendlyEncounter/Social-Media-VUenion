@@ -36,7 +36,6 @@
             <hr>
             <Rating :post="post" :canAddComment="allowCommentsOnWall" />
             <div class="post-comment-section">
-                <!--Комментарии-->
                 <div v-if="getComments(post.id).length > 0">
                     <hr>
                     <Comment 
@@ -50,7 +49,6 @@
                     :isUserAdmin="isUserAdmin" 
                     :isReply="false" />
                 </div>
-
                 <NewComment 
                 v-if="checkUser && post.showComment" 
                 :post="post" 
