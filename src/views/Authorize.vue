@@ -82,6 +82,7 @@ export default {
             this.$store.dispatch('loginUser', user)
                 .then(() => {
                     this.sumbitStatus = "ok";
+                    this.$router.push({path: "/feed"})
                     Message.success("Добро пожаловать, "+this.$store.getters.getUserInfo.name+"!")
                 })
                 .catch(err => {

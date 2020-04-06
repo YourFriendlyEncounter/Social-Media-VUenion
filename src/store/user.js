@@ -3,15 +3,15 @@ import firebase from 'firebase/app'
 import User from './user_help'
 import UserInfo from './user_info'
 import Message from 'vue-m-message'
-import Router from '../router'
 
 export default {
     state: {
         user: null,
         userInfo: null,
         loadingCurrentUser: true,
-        loadingUserInfos: true,
-        userInfoList: []
+        loadingUserInfos: false,
+        userInfoList: [],
+        deletedUserIDs: []
     },
     mutations: {
         setUser(state, payload){
@@ -28,54 +28,64 @@ export default {
         },
         setUserInfoList(state, payload){
             state.userInfoList = payload;
+        },
+        addUserToList(state, payload) {
+            state.userInfoList.push(payload)
+        },
+        addDeletedUserID(state, payload) {
+            state.deletedUserIDs.push(payload)
         }
-    },
+     },
     actions: {
-        async loadUserInfos ({commit}){
+        async loadUserInfo ({commit}, {userID}){
             commit('clearError')
             commit('setLoadingUserInfos', true)
             try{
-                let userInfos = await firebase.database().ref('userInfos').once('value');
+                let userInfos = await firebase.database().ref('userInfos/'+userID).once('value');
+                if(!userInfos.exists())
+                {
+                    commit('addDeletedUserID', userID)
+                    commit('setLoadingUserInfos', false)
+                    return null;
+                }   
                 let userInfosVal = userInfos.val();
-                const usersArray = []
-                Object.keys(userInfosVal).forEach(key => {
-                    let u = userInfosVal[key]
-                    if(u.allowWallPublications == undefined)
-                        u.allowWallPublications = false;
-                    if(u.allowCommentsOnWall == undefined)
-                        u.allowCommentsOnWall = true;
-                    if(u.showDateOfBirth == undefined)
-                        u.showDateOfBirth = true;
-                    if(u.birthDate == undefined)
-                        u.birthDate = (new Date()).toString()
 
-                    let newUserInfo = {}
-                    newUserInfo.id = u.id;
-                    newUserInfo.comrades = u.comrades;
-                    newUserInfo.name = u.name;
-                    newUserInfo.lastName = u.lastName;
-                    newUserInfo.birthDate = u.birthDate;
-                    newUserInfo.image = u.image;
-                    
-                    newUserInfo.isAdmin = u.isAdmin;
+                let u = userInfosVal
+                if(u.allowWallPublications == undefined)
+                    u.allowWallPublications = false;
+                if(u.allowCommentsOnWall == undefined)
+                    u.allowCommentsOnWall = true;
+                if(u.showDateOfBirth == undefined)
+                    u.showDateOfBirth = true;
+                if(u.birthDate == undefined)
+                    u.birthDate = (new Date()).toString()
 
-                    newUserInfo.status = u.status;
-                    newUserInfo.about = u.about;
+                let newUserInfo = {}
+                newUserInfo.id = u.id;
+                newUserInfo.comrades = u.comrades;
+                newUserInfo.name = u.name;
+                newUserInfo.lastName = u.lastName;
+                newUserInfo.birthDate = u.birthDate;
+                newUserInfo.image = u.image;
+                
+                newUserInfo.isAdmin = u.isAdmin;
 
-                    // Настройки
-                    newUserInfo.allowWallPublications = u.allowWallPublications
-                    newUserInfo.allowCommentsOnWall = u.allowCommentsOnWall
-                    newUserInfo.showDateOfBirth = u.showDateOfBirth
- 
-                    usersArray.push(newUserInfo)
-                })
-                commit('setUserInfoList', usersArray)
+                newUserInfo.status = u.status;
+                newUserInfo.about = u.about;
+
+                // Настройки
+                newUserInfo.allowWallPublications = u.allowWallPublications
+                newUserInfo.allowCommentsOnWall = u.allowCommentsOnWall
+                newUserInfo.showDateOfBirth = u.showDateOfBirth
+
+                commit('addUserToList', newUserInfo)
                 commit('setLoadingUserInfos', false)
+                return newUserInfo;
             }
             catch(error){
                 commit('setLoadingUserInfos', false)
                 commit('setError', error.message)
-                Message.error(error);
+                Message.error(error.message);
                 throw error
             }
         },
@@ -162,12 +172,11 @@ export default {
                 commit('setUserInfo', userInfo)
             }
             catch(error){
-                commit('serError', error.message)
+                commit('setError', error.message)
                 Message.error(error.message)
                 throw error
             }
             finally{
-                Router.push({ path: '/feed' })
                 commit('setLoadingCurrentUser', false)
             }
         },
@@ -181,7 +190,7 @@ export default {
                 Message.success("Информация профиля изменена.");
             }
             catch(error){
-                commit('serError', error.message)
+                commit('setError', error.message)
                 Message.error(error.message)
                 throw error
             }
@@ -223,6 +232,9 @@ export default {
             })
             return user;
         },
+        getDeletedUserIDs(state) {
+            return state.deletedUserIDs
+        }
     },
     modules: {
 

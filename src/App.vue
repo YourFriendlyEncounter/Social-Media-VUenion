@@ -23,8 +23,8 @@
       from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
     </footer>
   </div>
-  <div v-else id="div-loading">
-    <div id="loading-inside">
+  <div v-else class="div-loading">
+    <div class="loading-inside">
       <Loading :displayWhatLoading="false" />
     </div>
   </div>
@@ -52,7 +52,7 @@ export default {
           return this.$store.getters.user
       },
       isLoading() {
-        return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos
+        return this.$store.getters.getLoadingCurrentUser
       },
   }
 }
@@ -62,13 +62,13 @@ export default {
 body, h1, h2, h4, p{
   margin: 0;
 }
-#div-loading{
+.div-loading{
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-#loading-inside{
+.loading-inside{
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -103,6 +103,7 @@ export default{
                 });
             }
             catch(error){
+                Message.error(error.message)
                 commit('setLoadingFiles', false)
                 throw error
             }

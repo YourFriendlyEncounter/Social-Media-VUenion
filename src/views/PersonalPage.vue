@@ -1,14 +1,14 @@
 <template>
-    <div id="personal-page">
+    <div id="personal-page" v-if="user">
         <div id="personal-page-top">
             <div id="personal-page-image">
-                <img id="img-avatar" width="200" style="min-height: 128; max-height: 300;">
+                <img id="img-avatar" width="200" :src="imageURL" style="min-height: 128; max-height: 300;">
                 <button 
                 v-if="isUserMe" 
                 id="button-edit-profile" 
                 class="custom-button"
-                @click="editProfile"
-                >Редактировать профиль</button>
+                @click="editProfile">
+                Редактировать профиль</button>
             </div>
             <div id="personal-page-text-info">
                 <h2> {{ user.name }} {{ user.lastName }}</h2>
@@ -23,20 +23,24 @@
         :field="user.id" 
         :allowPosting="user.allowWallPublications || isUserMe" 
         :allowCommentsOnWall="user.allowCommentsOnWall"/>
-    </div>    
+    </div>
+    <div v-else class="div-loading">
+        <div class="loading-inside">
+        <Loading :displayWhatLoading="false" />
+        </div>
+    </div>
 </template>
 
 <script>
 import PostSection from '../components/PostSection'
+import Loading from '../components/Loading.vue'
 
 export default {
     components: {
-        PostSection
+        PostSection,
+        Loading
     },
     computed: {
-        getCurrentPageUser() {
-            return this.$store.getters.getUserById(this.id);
-        },
         getAuthors() {
             return this.$store.getters.getUserList;
         },
@@ -59,50 +63,58 @@ export default {
             let date = new Date(this.user.birthDate)
             let difference = Math.floor(((new Date) - date.getTime()) / 31536000000);
             return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (" + difference + " лет)";
+        },
+        getLoadedUsers() {
+            return this.$store.getters.getUserList;
         }
-
     },
     methods: {
         editProfile() {
             this.$router.push({ name: "EditProfile", params: { id: this.id }})
         },
-        async findImageURL(){
+        async setImageURL(){
             if(!this.user.image)
             {
                 let images = require.context('../assets/', false, /\.svg$/);
-                document.getElementById("img-avatar")
-                .setAttribute('src', images("./anonymous.svg"))
+                this.imageURL = images("./anonymous.svg")
             }
             else{
                 let URL = this.$store.getters.getLoadedUserAvatarURLs.find(u => u.id == this.user.id)
                 // Если ссылка уже была загружена ранее.
                 if(URL){
-                    document.getElementById("img-avatar")
-                    .setAttribute('src', URL.link)
+                    this.imageURL = URL.link
                 }
                 else{
                     let link = 'userAvatars/' + this.id;
-                    let newLink = await this.$store.dispatch('getImage', link)
+                    let newLink = await this.$store.dispatch('getImage', { link: link })
                     
-                    document.getElementById("img-avatar")
-                    .setAttribute('src', newLink)
+                    this.imageURL = newLink
                 }
+            }
+        },
+        async setCurrentPageUser() {
+            if(this.getLoadedUsers.some(u => u.id == this.id)){
+                this.user = this.$store.getters.getUserById(this.id);
+            }
+            else {
+                let id = this.id;
+                this.user = await this.$store.dispatch('loadUserInfo', {userID: id})
             }
         },
     },
     data() {
         return {
-            user: null
+            user: null,
+            imageURL: ""
         }
     },
     props: {
         id: String
     },
-    beforeMount() {
-        this.user = this.getCurrentPageUser
-    },
-    mounted() {
-        this.findImageURL()
+    created() {
+        this.setCurrentPageUser().then(() => {
+            this.setImageURL()
+        })
     }
 }
 </script>

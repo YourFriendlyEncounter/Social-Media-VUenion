@@ -39,7 +39,7 @@ export default {
         }
     },
     created() {
-        if(this.getPosts.length == 0)
+        if(this.getPosts.length === 0)
             this.loadEverything();
     },
     beforeDestroy() {
@@ -55,6 +55,9 @@ export default {
         isLoading() {
             return this.$store.getters.getLoadingCurrentUser || this.$store.getters.getLoadingUserInfos || this.$store.getters.isSending || this.$store.getters.isLoadingFiles;
         },
+        getLoadedUsers() {
+            return this.$store.getters.getUserList;
+        },
         getUserAvatarImageURLs() {
             return this.$store.getters.getLoadedUserAvatarURLs;
         },
@@ -69,30 +72,44 @@ export default {
         async loadPosts() {
             await this.$store.dispatch('loadPosts', {field: this.field});
         },
+        async loadUserInfo(userID) {
+            await this.$store.dispatch('loadUserInfo', {userID: userID});
+        },
         loadUserAvatar(userToLoadImagesFor) {
             this.$store.dispatch('loadUserAvatarURL', {user: userToLoadImagesFor})
         },
         loadPostImages(postToLoadImagesFor) {
             this.$store.dispatch('loadPostImagesURLs', {post: postToLoadImagesFor})
         },
-        loadEverything() {
-            this.loadPosts().then(() => {
-                let posts = this.getPosts;
-                for(let i = 0; i < posts.length; i++) {
-                    // Если есть не загруженные картинки
-                    if(posts[i].images == true && !this.getLoadedImagesURLs.some(u => u.id == posts[i].id)){
-                        this.loadPostImages(posts[i]);
-                    }
-                    // Если фото профиля ещё не загружено
-                    if(!this.getUserAvatarImageURLs.some(u => u.id == posts[i].user)) {
-                        let user = this.getAuthorById(posts[i].user);
-                        if(user)
-                            this.loadUserAvatar(user);
-                    }
+        async loadEverything() {
+            await this.loadPosts();
+            let posts = this.getPosts;
+            for(let i = 0; i < posts.length; i++) {
+                if(this.$store.getters.getDeletedUserIDs.includes(posts[i].user) || this.getLoadedUsers.some(u => u.id === posts[i].user)){
+                    this.loadImages(posts[i])
                 }
-                if(this.updateTimer == null)
-                    this.updateTimer = setInterval(() => { this.loadEverything(); console.log("Данные подгружены для " + this.field) }, 5000)
-            });
+                else {
+                    await this.loadUserInfo(posts[i].user);
+                    this.loadImages(posts[i])
+                }
+            }
+            if(this.updateTimer == null)
+                this.updateTimer = setInterval(() => { 
+                    this.loadEverything(); 
+                    console.log("Данные подгружены для " + this.field); 
+                }, 5000)
+        },
+        loadImages(post) {
+            // Если есть не загруженные картинки
+            if(post.images == true && !this.getLoadedImagesURLs.some(u => u.id == post.id)){
+                this.loadPostImages(post);
+            }
+            // Если фото профиля ещё не загружено
+            if(!this.getUserAvatarImageURLs.some(u => u.id == post.user)) {
+                let user = this.getAuthorById(post.user);
+                if(user)
+                    this.loadUserAvatar(user);
+            }
         }
     },
 }

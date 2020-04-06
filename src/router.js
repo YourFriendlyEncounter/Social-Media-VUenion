@@ -1,7 +1,6 @@
 import Vue from "vue"
 import Router from "vue-router"
 import store from "./store"
-import Message from "vue-m-message"
 
 Vue.use(Router)
 
@@ -27,19 +26,13 @@ export default new Router({
         {
             path: "/users/:id",
             name: "UserProfile",
-            component: () => import('./views/PersonalPage.vue'),
-            beforeEnter(to, from, next) {
-                store.getters.getUserById(to.params.id).name != "[Deleted]" ? next() : Message.error("Данный пользователь недоступен.")
-            },
+            component: () => import('./views/PersonalPage.vue'),    
             props: true
         },
         {
             path: "/users/:id/edit",
             name: "EditProfile",
             component: EditProfile,
-            beforeEnter(to, from, next) {
-                to.params.id == store.getters.user.id ? next() : Message.error("Доступ отклонён.")
-            },
             props: true
         },
     ]

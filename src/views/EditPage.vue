@@ -43,6 +43,12 @@ export default {
         getCurrentPageUser() {
             return this.$store.getters.getUserById(this.id);
         },
+        getLoadedUsers() {
+            return this.$store.getters.getUserList;
+        },
+        getUser() {
+            return this.$store.getters.user;
+        }
     },
     methods: {
         goBack() {
@@ -64,6 +70,9 @@ export default {
                 this.user.comrades = []
             }
             this.user.birthDate = this.user.birthDate.toString()
+            if(!this.user.isAdmin){
+                this.user.isAdmin = false
+            }
 
             let file = this.imageToSend
             let link = "userAvatars/" + this.user.id;
@@ -77,7 +86,22 @@ export default {
         },
         handleFileUpload() {
             this.imageToSend = this.$refs.file.files[0];
-        }
+        },
+        async setCurrentPageUser() {
+            if(this.getLoadedUsers.some(u => u.id == this.id)){
+                this.user = this.$store.getters.getUserById(this.id);
+            }
+            else {
+                let id = this.id;
+                this.user = await this.$store.dispatch('loadUserInfo', {userID: id})
+            }
+            if(this.id != this.getUser.id)
+            {
+                Message.error("Доступ отклонён.")
+                this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
+                return;
+            }
+        },
     },
     props: {
         id: String
@@ -87,6 +111,9 @@ export default {
             user: null,
             imageToSend: null
         }
+    },
+    created() {
+        this.setCurrentPageUser();
     },
     beforeMount() {
         let loadedUserInfo = this.getCurrentPageUser;
