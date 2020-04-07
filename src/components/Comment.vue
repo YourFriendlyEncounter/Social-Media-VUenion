@@ -40,7 +40,7 @@
             :isReply="true" />
         </div>
         <NewComment 
-        v-if="checkUser && comment.showComment" 
+        v-if="comment.showComment" 
         :post="comment" 
         :userImage="getUserImageURL(getUser.id).link" 
         :isReply="true"

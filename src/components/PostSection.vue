@@ -80,7 +80,6 @@ export default {
             this.$store.dispatch('loadPostImagesURLs', {post: postToLoadImagesFor})
         },
         async loadEverything() {
-            if(this.getPosts.length == 0){
                 await this.loadPosts();
                 let posts = this.getPosts;
                 for(let i = 0; i < posts.length; i++) {
@@ -92,7 +91,6 @@ export default {
                         await this.loadImages(posts[i])
                     }
                 }
-            }
             this.$store.commit('setInterval', setInterval(() => { 
                 this.loadEverything(); 
                 console.log("Данные подгружены для " + this.field); 
