@@ -4,7 +4,7 @@
     <div id="main-content">
       <LeftSideBar v-if="checkUser" />
       <div id="main-content-center">
-        <router-view :key="$route.fullPath" />
+        <router-view :key="$route.fullPath + $store.getters.getComponentKey" />
       </div>
       <RightSideBar v-if="checkUser" />
     </div>
