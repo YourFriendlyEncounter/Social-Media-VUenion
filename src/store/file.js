@@ -82,7 +82,7 @@ export default{
             }
             commit('setLoadingFiles', false)
         },
-        async loadPostImagesURLs({commit}, {post}){
+        async loadPostImagesURLs({commit, getters}, {post}){
             commit('setLoadingFiles', true)
             try{
                 firebase.storage()
@@ -97,7 +97,8 @@ export default{
                         }
                         itemRef.getDownloadURL().then((url) => {
                             URL.link = url
-                            commit('pushImageURL', URL)
+                            if(!getters.getLoadedImagesURLs.some(u => u.link === URL.link))
+                                commit('pushImageURL', URL)
                         })
                     });
                 });

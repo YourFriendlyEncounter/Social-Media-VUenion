@@ -34,6 +34,7 @@
 <script>
 import PostSection from '../components/PostSection'
 import Loading from '../components/Loading.vue'
+import Message from 'vue-m-message'
 
 export default {
     components: {
@@ -123,6 +124,11 @@ export default {
     },
     created() {
         this.setCurrentPageUser().then(() => {
+            if(this.user == null){
+                this.$router.go(-1);
+                Message.error("Данный пользователь недоступен.")
+                return;
+            }
             this.setImageURL()
         })
     }

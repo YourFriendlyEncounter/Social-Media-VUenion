@@ -6,7 +6,7 @@ export default {
     state: {
         posts: [],
         loadingLikes: false,
-        loadingPosts: false
+        loadingPosts: false,
     },
     mutations: {
         setPosts (state, payload) {
@@ -20,16 +20,24 @@ export default {
         },
         setLoadingLikes(state, payload) {
             state.loadingLikes = payload;
+        },
+        setReferenceToOldestKey(state, payload){
+            state.referenceToOldestKey = payload;
         }
     },
     actions: {
-        async loadPosts ({commit, getters}, {field}){
+        async loadPosts ({commit, getters}, {field, page, itemsPerPage}){
             commit('clearError')
             commit('setLoading', true)
+            let postsArray = []
             try{
-                const post = await firebase.database().ref('posts').once('value')
+                const post = await firebase.database().ref('allPosts/'+field)
+                .limitToLast(page * itemsPerPage).once('value')
+                if(!post.exists()){
+                    return 0;
+                }
                 const posts = post.val()
-                let postsArray = []
+                let newPosts = 0;
                 Object.keys(posts).forEach(key => {
                     let p = posts[key]
 
@@ -41,8 +49,7 @@ export default {
                         p.target = "feed"
                     if(!p.images)
                         p.images = false
-
-                    if(p.field === field){
+                    
                         let newPost = {}
                         newPost.text = p.text;
                         newPost.dateTimeAdded = p.dateTimeAdded;
@@ -64,11 +71,14 @@ export default {
                             else
                                 newPost.showComment = false;
                         }
+                        if(!getters.getPosts.some(p => p.id == key)){
+                            newPosts++;
+                        }
                         postsArray.push(newPost)
-                    }
                 })
                 commit('setPosts', postsArray)
                 commit('setLoading', false)
+                return newPosts;
             }
             catch(error){
                 commit('setLoading', false)
@@ -97,7 +107,7 @@ export default {
                 newPost.showComment = false;
 
                 const post = await firebase.database()
-                .ref('posts')
+                .ref('allPosts/'+payload.field)
                 .push(newPost)
 
                 if(payload.type == "comment")
@@ -124,7 +134,7 @@ export default {
             commit('setLoading', true)
             try{
                 await firebase.database()
-                .ref('posts/'+payload.id)
+                .ref('allPosts/'+payload.field+"/"+payload.id)
                 .remove();
                 
                 for(let i = 0; i < 10; i++){
