@@ -18,7 +18,7 @@
                 </div>
                 <a 
                 href="#"
-                v-if="getUser.id == post.user || isUserAdmin" 
+                v-if="getUser.id == post.user || isUserAdmin || canDelete" 
                 class="post-delete"
                 @click="deletePostOrComment(post)">X</a>
             </div>
@@ -47,7 +47,8 @@
                     :getAuthorById="getAuthorById"
                     :getRelativeDate="getRelativeDate"
                     :isUserAdmin="isUserAdmin" 
-                    :isReply="false" />
+                    :isReply="false" 
+                    :canDelete="canDelete"/>
                 </div>
                 <NewComment 
                 v-if="checkUser && post.showComment" 
@@ -75,8 +76,9 @@ export default {
             let userInfo = this.$store.getters.getUserById(id)
             if(!userInfo){
                 return {
-                    name: "[Гость]",
-                    isAdmin: false
+                    name: "[Deleted]",
+                    isAdmin: false,
+                    images: false
                 }
             }
             else return userInfo
@@ -131,7 +133,8 @@ export default {
     },
     props: {
         post: Object,
-        allowCommentsOnWall: Boolean
+        allowCommentsOnWall: Boolean,
+        canDelete: Boolean
     },
     computed: {
         getAuthors() {

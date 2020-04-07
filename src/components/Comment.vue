@@ -4,7 +4,7 @@
             <div class="post-comment-inner">
                 <a 
                 href="#"
-                v-if="getUser.id == comment.user || isUserAdmin" 
+                v-if="getUser.id == comment.user || isUserAdmin || canDelete" 
                 class="post-comment-delete"
                 @click="deletePostOrComment(comment)">X</a>
 
@@ -37,7 +37,8 @@
             :getAuthorById="getAuthorById"
             :getRelativeDate="getRelativeDate"
             :isUserAdmin="isUserAdmin" 
-            :isReply="true" />
+            :isReply="true" 
+            :canDelete="canDelete"/>
         </div>
         <NewComment 
         v-if="comment.showComment" 
@@ -83,6 +84,14 @@ export default {
         getRelativeDate: Function,
         isUserAdmin: Boolean,
         isReply: Boolean,
+        canDelete: Boolean
+    },
+    async beforeMount() {
+        let author = this.getAuthorById(this.comment.user);
+        if(author.name == "[Deleted]"){
+            await this.$store.dispatch('loadUserInfo', {userID: this.comment.user})
+            await this.$store.dispatch('loadUserAvatarURL', {user: this.comment.user})
+        }
     }
 }
 </script>

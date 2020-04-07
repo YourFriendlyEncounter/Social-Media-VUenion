@@ -21,6 +21,7 @@
         <h2 style="margin-bottom: 0.5rem;">Лента: </h2>
         <PostSection 
         :field="user.id" 
+        :canDelete="isUserMe"
         :allowPosting="user.allowWallPublications || isUserMe" 
         :allowCommentsOnWall="user.allowCommentsOnWall"/>
     </div>

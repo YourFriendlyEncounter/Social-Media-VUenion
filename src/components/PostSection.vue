@@ -9,6 +9,7 @@
             v-for="post in getPosts" 
             :key="post.id" 
             :post="post" 
+            :canDelete="canDelete"
             :allowCommentsOnWall="allowCommentsOnWall"/>
             <button class="custom-button" @click="loadNewPage" v-if="loadedItemsCountLastTime > 0">Загрузить ещё</button>
         </div>
@@ -27,14 +28,15 @@ export default {
     props: {
         field: String,
         allowPosting: Boolean,
-        allowCommentsOnWall: Boolean
+        allowCommentsOnWall: Boolean,
+        canDelete: Boolean,
     },
     data() {
         return {
             imagesAlreadyLoaded: Boolean,
             page: 1,
             itemsPerPage: 5,
-            loadedItemsCountLastTime: 1
+            loadedItemsCountLastTime: 1,
         }
     },
     async created() {
@@ -112,6 +114,9 @@ export default {
             if(!isUpdating)
                 this.loadedItemsCountLastTime = await this.loadPosts();
             else await this.loadPosts();
+            if(this.loadedItemsCountLastTime == 0){
+                this.finishedLoading = true;
+            }
             let posts = this.getPosts;
             for(let i = 0; i < posts.length; i++) {
                 if(this.$store.getters.getDeletedUserIDs.includes(posts[i].user) || this.getLoadedUsers.some(u => u.id === posts[i].user)){

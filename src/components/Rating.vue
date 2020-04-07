@@ -82,7 +82,6 @@ export default {
                 this.post.showComment = false;
             }
             this.post.showComment = !this.post.showComment;
-            this.$store.dispatch('changeComponentKey')
         }
     },
     computed: {

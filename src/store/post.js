@@ -23,12 +23,18 @@ export default {
         },
         setReferenceToOldestKey(state, payload){
             state.referenceToOldestKey = payload;
+        },
+        clearPost(state) {
+            state.posts = []
         }
     },
     actions: {
         async loadPosts ({commit, getters}, {field, page, itemsPerPage}){
             commit('clearError')
             commit('setLoading', true)
+            if(page == 0){
+                commit('clearPost')
+            }
             let postsArray = []
             try{
                 const post = await firebase.database().ref('allPosts/'+field)
@@ -190,7 +196,7 @@ export default {
                 post.liked = post.liked.filter(pl => pl != userID)
             }
             await firebase.database()
-                .ref('posts/'+post.id+"/liked/")
+                .ref('allPosts/'+ post.field + "/" +post.id+"/liked/")
                 .set(newLiked);
             commit('setLoadingLikes', false)
         },
@@ -212,7 +218,7 @@ export default {
                 post.disliked = post.disliked.filter(pl => pl != userID)
             }
             await firebase.database()
-                .ref('posts/'+post.id+"/disliked/")
+                .ref('allPosts/'+ post.field + "/" +post.id+"/disliked/")
                 .set(newDisliked);
             commit('setLoadingLikes', false)
         }
