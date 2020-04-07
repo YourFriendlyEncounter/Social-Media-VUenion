@@ -34,16 +34,14 @@ export default {
     },
     data() {
         return {
-            updateTimer: null,
             imagesAlreadyLoaded: Boolean
         }
     },
     created() {
-        if(this.getPosts.length === 0)
-            this.loadEverything();
+        this.loadEverything();
     },
     beforeDestroy() {
-        clearInterval(this.updateTimer)
+        this.$store.commit("stopInterval")
     },
     computed: {
         checkUser() {
@@ -82,22 +80,23 @@ export default {
             this.$store.dispatch('loadPostImagesURLs', {post: postToLoadImagesFor})
         },
         async loadEverything() {
-            await this.loadPosts();
-            let posts = this.getPosts;
-            for(let i = 0; i < posts.length; i++) {
-                if(this.$store.getters.getDeletedUserIDs.includes(posts[i].user) || this.getLoadedUsers.some(u => u.id === posts[i].user)){
-                    this.loadImages(posts[i])
-                }
-                else {
-                    await this.loadUserInfo(posts[i].user);
-                    this.loadImages(posts[i])
+            if(this.getPosts.length == 0){
+                await this.loadPosts();
+                let posts = this.getPosts;
+                for(let i = 0; i < posts.length; i++) {
+                    if(this.$store.getters.getDeletedUserIDs.includes(posts[i].user) || this.getLoadedUsers.some(u => u.id === posts[i].user)){
+                        await this.loadImages(posts[i])
+                    }
+                    else {
+                        await this.loadUserInfo(posts[i].user);
+                        await this.loadImages(posts[i])
+                    }
                 }
             }
-            if(this.updateTimer == null)
-                this.updateTimer = setInterval(() => { 
-                    this.loadEverything(); 
-                    console.log("Данные подгружены для " + this.field); 
-                }, 5000)
+            this.$store.commit('setInterval', setInterval(() => { 
+                this.loadEverything(); 
+                console.log("Данные подгружены для " + this.field); 
+            }, 5000))
         },
         loadImages(post) {
             // Если есть не загруженные картинки

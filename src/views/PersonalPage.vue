@@ -13,7 +13,7 @@
             <div id="personal-page-text-info">
                 <h2> {{ user.name }} {{ user.lastName }}</h2>
                 <p> {{ getInfo.status }} </p>
-                <p> {{ getBirthDate }} </p>
+                <p v-if="user.showDateOfBirth"> {{ getBirthDate }} </p>
             </div>
         </div>
         <h2>О себе:</h2>
@@ -62,13 +62,23 @@ export default {
         getBirthDate() {
             let date = new Date(this.user.birthDate)
             let difference = Math.floor(((new Date) - date.getTime()) / 31536000000);
-            return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (" + difference + " лет)";
+            if(difference < 0){
+                return "Родится " + date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (через " + (-difference - 1) + " " + this.getYearProperly(-difference - 1) + ")";
+            }
+            return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (" + difference + " " + this.getYearProperly(difference) + ")";
         },
         getLoadedUsers() {
             return this.$store.getters.getUserList;
         }
     },
     methods: {
+        getYearProperly(years){
+            if(years % 10 == 1)
+                return "год"
+            else if((years % 10 == 2 || years % 10 == 3 || years % 10 == 4) && (years % 100 - years % 10) / 10 != 1)
+                return "года"
+            else return "лет"
+        },
         editProfile() {
             this.$router.push({ name: "EditProfile", params: { id: this.id }})
         },

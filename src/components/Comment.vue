@@ -64,8 +64,12 @@ export default {
         checkUser() {
             return this.$store.getters.checkUser;
         },
-        getUser() {
-            return this.$store.getters.user;
+        getUser(){
+            let user = this.$store.getters.user;
+            if(!user){
+                return {id: ""}
+            }
+            else return user
         },
         getReplies() {
             return this.$store.getters.getPosts.slice().filter(p => p.target == this.comment.id)

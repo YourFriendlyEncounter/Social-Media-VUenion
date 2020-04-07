@@ -72,7 +72,14 @@ export default {
     },
     methods: {
         getAuthorById(id){
-            return this.$store.getters.getUserById(id)
+            let userInfo = this.$store.getters.getUserById(id)
+            if(!userInfo){
+                return {
+                    name: "[Гость]",
+                    isAdmin: false
+                }
+            }
+            else return userInfo
         },
         getUserImageURL(id){
             let link = this.getUserAvatarImageURLs.slice().filter(i => i.id == id)[0];
@@ -134,10 +141,18 @@ export default {
             return this.$store.getters.checkUser
         },
         getUser(){
-            return this.$store.getters.user;
+            let user = this.$store.getters.user;
+            if(!user){
+                return {id: ""}
+            }
+            else return user
         },
         isUserAdmin() {
-            return this.$store.getters.getUserInfo.isAdmin;
+            let userInfo = this.$store.getters.getUserInfo;
+            if(!userInfo){
+                return false
+            }
+            else return userInfo.isAdmin
         },
         getUserAvatarImageURLs() {
             return this.$store.getters.getLoadedUserAvatarURLs

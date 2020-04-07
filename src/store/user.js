@@ -3,6 +3,7 @@ import firebase from 'firebase/app'
 import User from './user_help'
 import UserInfo from './user_info'
 import Message from 'vue-m-message'
+import Router from '../router'
 
 export default {
     state: {
@@ -177,6 +178,9 @@ export default {
                 throw error
             }
             finally{
+                if(Router.currentRoute.path == "/"){
+                    Router.push('/feed')
+                }
                 commit('setLoadingCurrentUser', false)
             }
         },

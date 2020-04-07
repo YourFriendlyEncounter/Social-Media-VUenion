@@ -109,15 +109,22 @@ export default {
     data() {
         return {
             user: null,
+            userSet: false,
+            initialUser: null,
             imageToSend: null
         }
     },
     created() {
         this.setCurrentPageUser();
     },
+    beforeDestroy() {
+        if(!this.userSet)
+            this.user = this.initialUser;
+    },
     beforeMount() {
         let loadedUserInfo = this.getCurrentPageUser;
         this.user = loadedUserInfo;
+        this.initialUser = loadedUserInfo;
     }
 }
 </script>

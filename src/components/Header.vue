@@ -15,13 +15,12 @@
 </template>
 
 <script>
-import firebase from 'firebase/app'
 //import Message from 'vue-m-message'
 
 export default {
     methods: {
         unlogUser(){
-            firebase.auth().signOut();
+            this.$store.commit('unlogUser')
             this.$store.commit('setUser', null);
             this.$store.commit('setUserInfo', null);
             this.$router.push('/');
