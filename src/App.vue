@@ -9,18 +9,6 @@
       <RightSideBar v-if="checkUser" />
     </div>
     <footer>
-      Icons made by 
-      <a href="https://www.flaticon.com/authors/dinosoftlabs" title="DinosoftLabs">DinosoftLabs</a>,
-      <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a>, 
-      <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a>,
-      <a href="https://www.flaticon.com/authors/prettycons" title="prettycons">prettycons</a>,
-      <a href="https://www.flaticon.com/authors/surang" title="surang">surang</a>,
-      <a href="https://www.flaticon.com/authors/mynamepong" title="mynamepong">mynamepong</a>,
-      <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a>,
-      <a href="https://www.flaticon.com/authors/prosymbols" title="Prosymbols">Prosymbols</a>,
-      <a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a>,
-
-      from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
     </footer>
   </div>
   <div v-else class="div-loading">
@@ -93,7 +81,6 @@ body {
   flex-direction: column;
 }
 footer{
-  position: fixed;
   bottom: 0;
   background: rgb(222, 236, 255);
   width: 100%;

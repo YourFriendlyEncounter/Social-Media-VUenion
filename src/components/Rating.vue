@@ -78,6 +78,10 @@ export default {
             this.$store.dispatch('changeDislikes', {post, userID, isToRemove})
         },
         showCommentClicked(){
+            if(!this.checkUser){
+                Message.error("Авторизуйтесь, чтобы оставлять отзывы.")
+                return;
+            }
             if(this.post.showComment == undefined){
                 this.post.showComment = false;
             }

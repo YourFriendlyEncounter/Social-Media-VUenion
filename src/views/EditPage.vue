@@ -73,7 +73,7 @@ export default {
             if(!this.user.isAdmin){
                 this.user.isAdmin = false
             }
-
+            this.userSet = true;
             let file = this.imageToSend
             let link = "userAvatars/" + this.user.id;
 
@@ -118,13 +118,21 @@ export default {
         this.setCurrentPageUser();
     },
     beforeDestroy() {
-        if(!this.userSet)
-            this.user = this.initialUser;
+        if(!this.userSet){ 
+            this.user.name = this.initialUser.name;
+            this.user.lastName = this.initialUser.lastName;
+            this.user.status = this.initialUser.status;
+            this.user.about = this.initialUser.about;
+            this.user.birthDate = this.initialUser.birthDate;
+            this.user.allowWallPublications = this.initialUser.allowWallPublications;
+            this.user.allowCommentsOnWall = this.initialUser.allowCommentsOnWall;
+            this.user.showDateOfBirth = this.initialUser.showDateOfBirth;
+        }
     },
     beforeMount() {
         let loadedUserInfo = this.getCurrentPageUser;
         this.user = loadedUserInfo;
-        this.initialUser = loadedUserInfo;
+        this.initialUser = { ...loadedUserInfo };
     }
 }
 </script>

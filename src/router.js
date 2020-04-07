@@ -35,5 +35,11 @@ export default new Router({
             component: EditProfile,
             props: true
         },
+        {
+            path: "/dependencies",
+            name: "Dependencies",
+            component: () => import('./views/Dependencies.vue'),    
+            props: true
+        },
     ]
 })

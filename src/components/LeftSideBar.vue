@@ -45,6 +45,11 @@ export default {
                     name: "Группы",
                     image: "groups.png",
                     link: "Feed"
+                },
+                {
+                    name: "Зависимости",
+                    image: "customer.png",
+                    link: "Dependencies"
                 }
             ]
         }

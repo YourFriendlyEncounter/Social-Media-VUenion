@@ -50,6 +50,9 @@ export default {
         getFriendsFilteredByOnline(){
             return this.friends.concat().sort((f, f2) => f2.isOnline - f.isOnline); 
         }
+    },
+    beforeMount() {
+        
     }
 }
 </script>

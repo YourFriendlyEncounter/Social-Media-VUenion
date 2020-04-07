@@ -59,7 +59,11 @@ export default {
             return tempUser;
         },
         isUserMe(){
-            return this.id == this.$store.getters.user.id
+            let currentUser = this.$store.getters.user
+            if(!currentUser){
+                return false
+            }
+            return this.id == currentUser.id
         },
         getBirthDate() {
             let date = new Date(this.user.birthDate)
