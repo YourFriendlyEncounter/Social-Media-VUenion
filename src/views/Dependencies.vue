@@ -5,6 +5,7 @@
         <ul>
             <li><a href="https://www.npmjs.com/package/vue-m-message">vue-m-message</a></li>
             <li><a href="https://github.com/mengxiong10/vue2-datepicker">vue2-datepicker</a></li>
+            <li><a href="https://github.com/XiongAmao/vue-easy-lightbox">vue-easy-lightbox</a></li>
         </ul>
         <h2>Изображения:</h2>
       <ul>

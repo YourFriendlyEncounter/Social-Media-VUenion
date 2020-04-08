@@ -89,9 +89,10 @@ export default {
     async beforeMount() {
         let author = this.getAuthorById(this.comment.user);
         if(author.name == "[Deleted]"){
-            await this.$store.dispatch('loadUserInfo', {userID: this.comment.user})
-            await this.$store.dispatch('loadUserAvatarURL', {user: this.comment.user})
+            author = await this.$store.dispatch('loadUserInfo', {userID: this.comment.user})
+            await this.$store.dispatch('loadUserAvatarURL', {user: author})
         }
+        else await this.$store.dispatch('loadUserAvatarURL', {user: author})
     }
 }
 </script>

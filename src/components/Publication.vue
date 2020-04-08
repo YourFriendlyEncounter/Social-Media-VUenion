@@ -23,14 +23,23 @@
                 @click="deletePostOrComment(post)">X</a>
             </div>
             <p class="post-text">{{ post.text }}</p>
-            <div v-if="post.images">
+            <div v-if="post.images" >
                 <hr>
-                <div class="post-images">
-                    <div class="post-image" v-for="image in getImagesForPost" :key="image.link" >
-                        <a :href="image.link">
-                            <img :src="image.link" width="96" height="64">
-                        </a>
-                    </div>
+                <div class="post-image-gallery">
+                    <vue-easy-lightbox
+                    escDisabled
+                    moveDisabled
+                    :visible="visible"
+                    :imgs="getImages"
+                    :index="index"
+                    @hide="handleHide"></vue-easy-lightbox>
+                    <img
+                    v-for="(image, imageIndex) in getImages"
+                    :key="image"
+                    @click="showImg(imageIndex)"
+                    :src="image"
+                    :class="{ 'image-single': getImages.length == 1, 'image-other': getImages.length > 1}"
+                    class="image">
                 </div>
             </div>
             <hr>
@@ -72,13 +81,20 @@ export default {
         Comment
     },
     methods: {
+        showImg (index) {
+            this.index = index
+            this.visible = true
+        },
+        handleHide () {
+            this.visible = false
+        },
         getAuthorById(id){
             let userInfo = this.$store.getters.getUserById(id)
             if(!userInfo){
                 return {
                     name: "[Deleted]",
                     isAdmin: false,
-                    images: false
+                    image: false
                 }
             }
             else return userInfo
@@ -131,12 +147,21 @@ export default {
             }
         }
     },
+    data() {
+        return {
+            visible: false,
+            index: null
+        }
+    },
     props: {
         post: Object,
         allowCommentsOnWall: Boolean,
         canDelete: Boolean
     },
     computed: {
+        getImages() {
+            return this.$store.getters.getLoadedImagesURLs.filter(u => u.id == this.post.id).map(u => u.link)
+        },
         getAuthors() {
             return this.$store.getters.getUserList;
         },
@@ -160,10 +185,8 @@ export default {
         getUserAvatarImageURLs() {
             return this.$store.getters.getLoadedUserAvatarURLs
         },
-        getImagesForPost(){
-            return this.$store.getters.getLoadedImagesURLs.filter(u => u.id == this.post.id)
-        }
     },
+
 }
 </script>
 
@@ -204,17 +227,24 @@ export default {
 }
 .post-text{
     overflow-wrap: break-word;
-}   
-.post-images{
+}
+.post-image-gallery{
     display: flex;
     justify-content: space-evenly;
     align-items: stretch;
     align-content: space-between;
     flex-wrap: wrap;
 }
-.post-image{
-    margin: 0.25rem;
-    display: flex;
-    align-content: center;
+.image{
+    margin: 0.25rem; 
+    background-size: cover;
+    cursor: pointer;
+}
+.image-single{
+    width: -webkit-fill-available;
+    max-height: 32rem;
+}
+.image-other{
+    height: 96px;
 }
 </style>

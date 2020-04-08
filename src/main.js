@@ -14,8 +14,9 @@ import 'vue-m-message/dist/index.css'
 Vue.use(Message) // will mount `Vue.prototype.$message`
 
 // Vue 
-
-
+import Lightbox from 'vue-easy-lightbox'
+Vue.use(Lightbox)
+ 
 // Firebase 
 import firebase from 'firebase/app'
 import 'firebase/auth' 
