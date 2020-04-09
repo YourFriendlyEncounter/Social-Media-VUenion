@@ -8,9 +8,9 @@ const fs = require('fs')
 const httpPort = 80
 
 http.createServer((req, res) => {
-  fs.readFile('index.htm', 'utf-8', (err, content) => {
+  fs.readFile('/Social-Media-VUenion/index.html', 'utf-8', (err, content) => {
     if (err) {
-      console.log('We cannot open "index.htm" file.')
+      console.log('We cannot open "index.html" file.')
     }
 
     res.writeHead(200, {

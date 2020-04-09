@@ -127,7 +127,6 @@ export default {
                     await this.loadImages(posts[i])
                 }
             }
-            console.log(this.getLoadedImagesURLs)
         },
         loadImages(post) {
             // Если есть не загруженные картинки
