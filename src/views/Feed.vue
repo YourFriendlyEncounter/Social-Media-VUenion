@@ -1,6 +1,6 @@
 <template>
     <div id="feed">
-        <PostSection :field="'feed'" :allowPosting="true" :allowCommentsOnWall="true" />
+        <PostSection :field="'feed'" :allowPosting="isUserAdmin" :allowCommentsOnWall="true" />
     </div>
 </template>
 
@@ -10,6 +10,15 @@ import PostSection from '../components/PostSection'
 export default {
     components: {
         PostSection
+    },
+    computed: {
+        isUserAdmin() {
+            let userInfo = this.$store.getters.getUserInfo;
+            if(!userInfo){
+                return false
+            }
+            else return userInfo.isAdmin
+        },
     },
     data(){
         return {

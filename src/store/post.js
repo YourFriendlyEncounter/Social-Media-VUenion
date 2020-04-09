@@ -146,7 +146,7 @@ export default {
                 for(let i = 0; i < 10; i++){
                     try{
                         await firebase.storage()
-                        .ref('posts/'+payload.id+"/"+i)
+                        .ref('allPosts/'+payload.id+"/"+i)
                         .delete();
                     }
                     catch(error){
