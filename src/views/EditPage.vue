@@ -64,7 +64,9 @@ export default {
                 return
             }
             if(!this.user.image){
-                this.user.image = false;
+                if(!this.imageToSend)
+                    this.user.image = false;
+                else this.user.image = true;
             }
             if(!this.user.comrades){
                 this.user.comrades = []

@@ -241,7 +241,6 @@ export default {
     cursor: pointer;
 }
 .image-single{
-    width: -webkit-fill-available;
     max-height: 32rem;
 }
 .image-other{

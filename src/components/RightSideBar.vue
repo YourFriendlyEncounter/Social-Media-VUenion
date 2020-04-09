@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="opacity: 0">
         <h4>Список товарищей</h4>
         <hr>
         <router-link 
