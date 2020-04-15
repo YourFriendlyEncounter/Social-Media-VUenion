@@ -26,7 +26,7 @@ export default{
         async sendFile({commit}, { link, file, id }){
             commit('setSending', true);
             try{
-                let image = await firebase.storage().ref(link);
+                let image = firebase.storage().ref(link);
                 await image.put(file);
                 let URL = {
                     id: id,

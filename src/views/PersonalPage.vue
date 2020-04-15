@@ -2,7 +2,19 @@
     <div id="personal-page" v-if="user">
         <div id="personal-page-top">
             <div id="personal-page-image">
-                <img id="img-avatar" width="200" :src="imageURL" style="min-height: 128; max-height: 300;">
+                <vue-easy-lightbox
+                    escDisabled
+                    moveDisabled
+                    :visible="profileImageVisible"
+                    :imgs="imageURL"
+                    :index="0"
+                    @hide="profileImageVisible = false"></vue-easy-lightbox>
+                <img 
+                :class="{ 'img-avatar': user.image} " 
+                width="200" 
+                :src="imageURL" 
+                style="min-height: 128; max-height: 300;"
+                @click="showAvatar">
                 <button 
                 v-if="isUserMe" 
                 id="button-edit-profile" 
@@ -117,11 +129,16 @@ export default {
                 this.user = await this.$store.dispatch('loadUserInfo', {userID: id})
             }
         },
+        showAvatar() {
+            if(this.user.image)
+                this.profileImageVisible = true
+        }
     },
     data() {
         return {
             user: null,
-            imageURL: ""
+            imageURL: "",
+            profileImageVisible: false
         }
     },
     props: {
@@ -147,6 +164,9 @@ p{
 #personal-page{
     width: 100%;
     text-align: left;
+}
+.img-avatar{
+    cursor: pointer;
 }
 #personal-page-top{
     display:flex;

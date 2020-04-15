@@ -7,6 +7,7 @@ export default {
         posts: [],
         loadingLikes: false,
         loadingPosts: false,
+        displayingNewCommentPanel: ""
     },
     mutations: {
         setPosts (state, payload) {
@@ -15,78 +16,104 @@ export default {
         newPost (state, payload) {
             state.posts.push(payload)
         },
+        addPostToEndList(state, payload) {
+            state.posts.unshift(payload)
+        },
         removePost(state, payload) {
             state.posts = state.posts.filter(p => p.id != payload.id)
         },
         setLoadingLikes(state, payload) {
             state.loadingLikes = payload;
         },
-        setReferenceToOldestKey(state, payload){
-            state.referenceToOldestKey = payload;
-        },
         clearPost(state) {
             state.posts = []
+        },
+        sortPosts(state) {
+            state.posts = state.posts.sort((p, p2) => new Date(p.dateTimeAdded) - new Date(p2.dateTimeAdded))
+        },
+        updatePost(state, payload) {
+            for(let i = 0; i < state.posts.length; i++){
+                if(state.posts[i].id === payload.id) {
+                    state.posts[i] = payload
+                    return
+                }
+            }
+        },
+        setDisplayingNewCommentPanel(state, payload) {
+            if(state.displayingNewCommentPanel == payload)
+                state.displayingNewCommentPanel = "";
+            else
+                state.displayingNewCommentPanel = payload;
         }
     },
     actions: {
         async loadPosts ({commit, getters}, {field, page, itemsPerPage}){
             commit('clearError')
             commit('setLoading', true)
-            if(page == 0){
-                commit('clearPost')
-            }
-            let postsArray = []
-            try{
-                const post = await firebase.database().ref('allPosts/'+field)
-                .limitToLast(page * itemsPerPage).once('value')
-                if(!post.exists()){
-                    return 0;
-                }
-                const posts = post.val()
-                let newPosts = 0;
-                Object.keys(posts).forEach(key => {
-                    let p = posts[key]
+            try {
+                const post = firebase.database().ref('allPosts/'+field)
+                .limitToLast(page * itemsPerPage + itemsPerPage)
+                post.on('child_added', (snap) => {
+                    let p = snap.val()
+                        
+                    let newPost = {}
+                    newPost.text = p.text;
+                    newPost.dateTimeAdded = p.dateTimeAdded;
+                    newPost.images = p.images;
+                    newPost.edited = p.edited;
+                    newPost.liked = p.liked;
+                    newPost.disliked = p.disliked;
+                    newPost.user = p.user;
 
-                    if(!p.type)
-                        p.type = "post"
-                    if(!p.field)
-                        p.field = "feed"
-                    if(!p.target)
-                        p.target = "feed"
-                    if(!p.images)
-                        p.images = false
-                    
-                        let newPost = {}
-                        newPost.text = p.text;
-                        newPost.dateTimeAdded = p.dateTimeAdded;
-                        newPost.images = p.images;
-                        newPost.edited = p.edited;
-                        newPost.liked = p.liked;
-                        newPost.disliked = p.disliked;
-                        newPost.user = p.user;
+                    newPost.type = p.type;
+                    newPost.target = p.target;
+                    newPost.field = p.field;
+                    newPost.id = snap.key;
 
-                        newPost.type = p.type;
-                        newPost.target = p.target;
-                        newPost.field = p.field;
-
-                        newPost.id = key;
-                        if(getters.getPosts.length > 0){
-                            let samePost = getters.getPosts.find(p => p.id === key);
-                            if(samePost && samePost.showComment)
-                                newPost.showComment = true;
-                            else
-                                newPost.showComment = false;
+                    if(getters.getPosts.length > 0){
+                        let samePost = getters.getPosts.find(p => p.id === snap.key);
+                        if(samePost && samePost.showComment)
+                            newPost.showComment = true;
+                        else
+                            newPost.showComment = false;
+                    }
+                    if(!getters.getPosts.find(p => p.id === snap.key)) {
+                        if(page === 0)
+                            commit('newPost', newPost)
+                        else {
+                            commit('addPostToEndList', newPost)
+                            commit('sortPosts')
                         }
-                        if(!getters.getPosts.some(p => p.id == key)){
-                            newPosts++;
-                        }
-                        postsArray.push(newPost)
+                    }
                 })
-                commit('setPosts', postsArray)
+                post.on('child_changed', (snap) => {
+                    let p = snap.val()
+                    
+                    let newPost = {}
+                    newPost.text = p.text;
+                    newPost.dateTimeAdded = p.dateTimeAdded;
+                    newPost.images = p.images;
+                    newPost.edited = p.edited;
+                    newPost.liked = p.liked;
+                    newPost.disliked = p.disliked;
+                    newPost.user = p.user;
+
+                    newPost.type = p.type;
+                    newPost.target = p.target;
+                    newPost.field = p.field;
+                    newPost.id = snap.key;
+                    
+                    commit('updatePost', newPost)
+                })
+                post.on('child_removed', (snap) => {
+                    let post = snap.val()
+                    post.id = snap.key
+                    commit('removePost', post)
+                    commit('sortPosts')
+                })
                 commit('setLoading', false)
-                return newPosts;
             }
-            catch(error){
+            catch(error) {
                 commit('setLoading', false)
                 commit('setError', error.message)
                 Message.error(error.message);
@@ -120,11 +147,9 @@ export default {
                     Message.success("Комментарий добавлен.");
                 else if(payload.type == "post")
                     Message.success("Пост добавлен.");
+                
+                commit('setDisplayingNewCommentPanel', "")
 
-                commit('newPost', {
-                    ...newPost,
-                    id: post.key
-                })
                 commit('setLoading', false)
                 return post.key;
             }
@@ -143,20 +168,18 @@ export default {
                 .ref('allPosts/'+payload.field+"/"+payload.id)
                 .remove();
                 
-                for(let i = 0; i < 10; i++){
+                for(let i = 0; i < payload.images; i++){
                     try{
                         await firebase.storage()
-                        .ref('allPosts/'+payload.id+"/"+i)
+                        .ref('posts/'+payload.id+"/"+i)
                         .delete();
                     }
                     catch(error){
+                        Message.error(error.message)
                         break;
                     }
                 }
-
-                commit("removePost", payload);
-
-                let postTargets = getters.getPosts.filter(p => p.target == payload.id);
+                let postTargets = getters.getPosts.filter(p => p.target === payload.id);
                 for(let i = 0; i < postTargets.length; i++){
                     dispatch('deletePost', postTargets[i])
                 }
@@ -233,5 +256,8 @@ export default {
         isLoadingPosts(state){
             return state.loadingPosts
         },
+        getDisplayingNewCommentPanel(state) {
+            return state.displayingNewCommentPanel
+        }
     }
 }

@@ -11,7 +11,7 @@
                         class="link-user"
                         :class="{ 'is-admin-name': getAuthorById(post.user).isAdmin }"
                         :to="{ name: 'UserProfile', params: { id: post.user }}"> 
-                            {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
+                        {{ getAuthorById(post.user).name }} {{ getAuthorById(post.user).lastName }}
                         </router-link>
                         <p> {{ getRelativeDate(post.dateTimeAdded) }} </p>
                     </div>
@@ -45,12 +45,12 @@
             <hr>
             <Rating :post="post" :canAddComment="allowCommentsOnWall" />
             <div class="post-comment-section">
-                <div v-if="getComments(post.id).length > 0">
+                <div v-if="getComments(postID).length > 0">
                     <hr>
                     <Comment 
                     v-for="comment in getComments(post.id)" 
                     :key="comment.id" 
-                    :comment="comment"
+                    :commentID="comment.id"
                     :deletePostOrComment="deletePostOrComment"
                     :getUserImageURL="getUserImageURL"
                     :getAuthorById="getAuthorById"
@@ -60,7 +60,7 @@
                     :canDelete="canDelete"/>
                 </div>
                 <NewComment 
-                v-if="checkUser && post.showComment" 
+                v-show="isShowingNewCommentPanel" 
                 :post="post" 
                 :userImage="getUserImageURL(getUser.id).link" 
                 :field="post.field"/>
@@ -73,6 +73,7 @@
 import Rating from '../components/Rating'
 import NewComment from '../components/NewComment'
 import Comment from '../components/Comment'
+import Vue from 'vue'
 
 export default {
     components: {
@@ -147,20 +148,38 @@ export default {
             }
         }
     },
+    async beforeMount() {
+        this.post = this.getPost
+        Vue.set(this.post, 'text', this.getPost.text)
+        
+        let author = this.getAuthorById(this.post.user);
+        if(author.name == "[Deleted]"){
+            author = await this.$store.dispatch('loadUserInfo', {userID: this.post.user})
+        }
+        await this.$store.dispatch('loadUserAvatarURL', {user: author})
+
+        if(this.post.images) {
+            await this.$store.dispatch('loadPostImagesURLs', { post: this.post })
+        }
+    },
     data() {
         return {
             visible: false,
-            index: null
+            index: null,
+            post: null
         }
     },
     props: {
-        post: Object,
+        postID: String,
         allowCommentsOnWall: Boolean,
         canDelete: Boolean
     },
     computed: {
+        isShowingNewCommentPanel() {
+            return this.$store.getters.getDisplayingNewCommentPanel === this.postID
+        },
         getImages() {
-            return this.$store.getters.getLoadedImagesURLs.filter(u => u.id == this.post.id).map(u => u.link)
+            return this.$store.getters.getLoadedImagesURLs.filter(u => u.id == this.postID).map(u => u.link)
         },
         getAuthors() {
             return this.$store.getters.getUserList;
@@ -185,6 +204,9 @@ export default {
         getUserAvatarImageURLs() {
             return this.$store.getters.getLoadedUserAvatarURLs
         },
+        getPost() {
+            return this.$store.getters.getPosts.find(p => p.id === this.postID)
+        }
     },
 
 }
@@ -242,6 +264,7 @@ export default {
 }
 .image-single{
     max-height: 32rem;
+    max-width: 100%;
 }
 .image-other{
     height: 96px;

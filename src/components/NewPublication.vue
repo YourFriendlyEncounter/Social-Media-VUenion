@@ -48,7 +48,7 @@ export default {
             let newPost = {}
             newPost.text = this.newPostText;
             newPost.dateTimeAdded = (new Date()).toString();
-            newPost.images = this.newPostImages.length > 0;
+            newPost.images = this.newPostImages.length;
             newPost.edited = false;
             newPost.liked = [];
             newPost.disliked = [];

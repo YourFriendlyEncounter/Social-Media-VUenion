@@ -21,7 +21,7 @@
                 <button 
                 v-if="canAddComment"
                 class="button-transparent-clickable button-comment" 
-                :class="{ 'is-post-liked': post.showComment == true }"
+                :class="{ 'is-post-liked': isShowingNewCommentPanel }"
                 @click="showCommentClicked" >
                     <img src="../assets/chat.png" width="24">
                 </button>
@@ -82,10 +82,7 @@ export default {
                 Message.error("Авторизуйтесь, чтобы оставлять отзывы.")
                 return;
             }
-            if(this.post.showComment == undefined){
-                this.post.showComment = false;
-            }
-            this.post.showComment = !this.post.showComment;
+            this.$store.commit('setDisplayingNewCommentPanel', this.post.id)
         }
     },
     computed: {
@@ -103,7 +100,10 @@ export default {
         },
         isLoadingLikes() {
             return this.$store.getters.isLoadingLikes;
-        }
+        },
+        isShowingNewCommentPanel() {
+            return this.$store.getters.getDisplayingNewCommentPanel === this.post.id
+        },
     },
     props: {
         post: Object,

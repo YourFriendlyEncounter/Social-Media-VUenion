@@ -4,26 +4,26 @@
             <div class="post-comment-inner">
                 <a 
                 href="#"
-                v-if="getUser.id == comment.user || isUserAdmin || canDelete" 
+                v-if="getUser.id == getComment.user || isUserAdmin || canDelete" 
                 class="post-comment-delete"
-                @click="deletePostOrComment(comment)">X</a>
+                @click="deletePostOrComment(getComment)">X</a>
 
                 <div class="post-author-photo-block">
-                    <img :src="getUserImageURL(comment.user).link" width="32" height="32">
+                    <img :src="getUserImageURL(getComment.user).link" width="32" height="32">
                 </div>
                 <div class="post-author-name-date-block">
                     <router-link 
                         class="link-user"
-                        :class="{ 'is-admin-name': getAuthorById(comment.user).isAdmin }"
-                        :to="{ name: 'UserProfile', params: { id: comment.user }}"> 
-                        {{ getAuthorById(comment.user).name }} {{ getAuthorById(comment.user).lastName }}
+                        :class="{ 'is-admin-name': getAuthorById(getComment.user).isAdmin }"
+                        :to="{ name: 'UserProfile', params: { id: getComment.user }}"> 
+                        {{ getAuthorById(getComment.user).name }} {{ getAuthorById(getComment.user).lastName }}
                     </router-link>
-                    <p> {{ getRelativeDate(comment.dateTimeAdded) }} </p>
+                    <p> {{ getRelativeDate(getComment.dateTimeAdded) }} </p>
                 </div>
-                <p style="margin-left: 0.5rem; max-width: 70%;">{{ comment.text }}</p>
+                <p style="margin-left: 0.5rem; max-width: 70%;">{{ getComment.text }}</p>
             </div>
             <div>
-                <Rating :post="comment" :canAddComment="!isReply" />
+                <Rating :post="getComment" :canAddComment="!isReply" />
             </div>
         </div>
 
@@ -31,7 +31,7 @@
         v-if="!isReply">
             <Comment 
             v-for="reply in getReplies" :key="reply.id"
-            :comment="reply"
+            :commentID="reply.id"
             :deletePostOrComment="deletePostOrComment"
             :getUserImageURL="getUserImageURL"
             :getAuthorById="getAuthorById"
@@ -41,11 +41,11 @@
             :canDelete="canDelete"/>
         </div>
         <NewComment 
-        v-if="comment.showComment" 
-        :post="comment" 
+        v-if="isShowingNewCommentPanel" 
+        :post="getComment" 
         :userImage="getUserImageURL(getUser.id).link" 
         :isReply="true"
-        :field="comment.field"/>
+        :field="getComment.field"/>
     </div>
 </template>
 
@@ -73,11 +73,17 @@ export default {
             else return user
         },
         getReplies() {
-            return this.$store.getters.getPosts.slice().filter(p => p.target == this.comment.id)
-        }
+            return this.$store.getters.getPosts.slice().filter(p => p.target == this.commentID)
+        },
+        getComment() {
+            return this.$store.getters.getPosts.find(p => p.id === this.commentID)
+        },
+        isShowingNewCommentPanel() {
+            return this.$store.getters.getDisplayingNewCommentPanel === this.commentID
+        },
     },
     props: {
-        comment: Object,
+        commentID: String,
         deletePostOrComment: Function,
         getUserImageURL: Function,
         getAuthorById: Function,
@@ -87,12 +93,11 @@ export default {
         canDelete: Boolean
     },
     async beforeMount() {
-        let author = this.getAuthorById(this.comment.user);
+        let author = this.getAuthorById(this.getComment.user);
         if(author.name == "[Deleted]"){
-            author = await this.$store.dispatch('loadUserInfo', {userID: this.comment.user})
-            await this.$store.dispatch('loadUserAvatarURL', {user: author})
+            author = await this.$store.dispatch('loadUserInfo', {userID: this.getComment.user})
         }
-        else await this.$store.dispatch('loadUserAvatarURL', {user: author})
+        await this.$store.dispatch('loadUserAvatarURL', {user: author})
     }
 }
 </script>
