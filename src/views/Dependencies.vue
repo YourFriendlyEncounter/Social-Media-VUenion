@@ -18,6 +18,7 @@
         <li><a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a>,</li>
         <li><a href="https://www.flaticon.com/authors/prosymbols" title="Prosymbols">Prosymbols</a>,</li>
         <li><a href="https://www.flaticon.com/authors/smalllikeart" title="smalllikeart">smalllikeart</a>,</li>
+        <li><a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a></li>
       </ul>
     </div>
 </template>

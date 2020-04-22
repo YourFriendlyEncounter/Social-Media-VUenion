@@ -54,7 +54,7 @@ export default {
         goBack() {
             this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
         },
-        submitEdit() {
+        async submitEdit() {
             if(this.user.name.length < 3 || this.user.lastName.length < 3){
                 Message.error('Имя, фамилия пользователя не должны быть короче 3 символов')
                 return
@@ -79,11 +79,14 @@ export default {
             let file = this.imageToSend
             let link = "userAvatars/" + this.user.id;
 
-            if(this.imageToSend != null){
-                this.$store.dispatch('sendFile', { link, file })
-                this.user.image = true
+            if(this.imageToSend != null) {
+                this.user.image = true;
             }
-            this.$store.dispatch('changeUserInfo', this.user)
+            await this.$store.dispatch('changeUserInfo', this.user)
+            
+            if(this.imageToSend != null){
+                this.user.image = await this.$store.dispatch('sendFile', { link, file })
+            }
             this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
         },
         handleFileUpload() {

@@ -5,7 +5,6 @@ export default{
     state: {
         sending: false,
         loadingFiles: false,
-        userAvatarImageURLs: [],
         imageURLsLoaded: []
     },
     mutations: {
@@ -15,40 +14,40 @@ export default{
         setLoadingFiles(state, payload) {
             state.loadingFiles = payload
         },
-        pushUserAvatarImageURL(state, payload) {
-            state.userAvatarImageURLs.push(payload)
-        },
         pushImageURL(state, payload){
             state.imageURLsLoaded.push(payload)
-        }
+        },
     },
     actions: {
-        async sendFile({commit}, { link, file, id }){
+        async sendFile({commit}, { link, file, id, i }){
+            let urlToReturn = "";
             commit('setSending', true);
             try{
                 let image = firebase.storage().ref(link);
                 await image.put(file);
                 let URL = {
                     id: id,
+                    number: i,
                     link: ""
                 }
-                image.getDownloadURL().then((url) => {
+                await image.getDownloadURL().then((url) => {
                     URL.link = url
                     commit('pushImageURL', URL)
+                    commit('setSending', false);
+                    urlToReturn = url;
                 })
+                return urlToReturn;
             }
             catch(error){
+                commit('setSending', false);
                 Message.error(error.message);
                 throw error
-            }
-            finally{
-                commit('setSending', false);
             }
         },
         async getImage({commit}, { link }) {
             try{
-                let url = await firebase.storage().ref().child(link)
-                .getDownloadURL().then((url) => { return url });
+                let url = await firebase.storage().ref(link)
+                .getDownloadURL()
                 return url;
             }
             catch(error) {
@@ -58,29 +57,6 @@ export default{
             finally{
                 commit('setSending', false);
             }
-        },
-        async loadUserAvatarURL({commit, getters}, {user}) {
-            commit('setLoadingFiles', true)
-            if(user.image){
-                try{
-                    let URL = {
-                        id: user.id,
-                        link: ""
-                    }
-                    await firebase.storage().ref().child('userAvatars/' + user.id)
-                    .getDownloadURL().then((url) => { 
-                        URL.link = url 
-                        if(!getters.getLoadedUserAvatarURLs.some(u => u.id === URL.id))
-                            commit('pushUserAvatarImageURL', URL);
-                    });
-                }
-                catch(error){
-                    commit('setLoadingFiles', false)
-                    Message.error(error.message)
-                    throw error
-                }
-            }
-            commit('setLoadingFiles', false)
         },
         async loadPostImagesURLs({commit, getters}, {post}){
             commit('setLoadingFiles', true)
@@ -93,7 +69,8 @@ export default{
                     res.items.forEach((itemRef) => {
                         let URL = {
                             id: post.id,
-                            link: ""
+                            link: "",
+                            number: itemRef.name
                         }
                         itemRef.getDownloadURL().then((url) => {
                             URL.link = url
@@ -117,9 +94,6 @@ export default{
         },
         isLoadingFiles(state){
             return state.loadingFiles;
-        },
-        getLoadedUserAvatarURLs(state) {
-            return state.userAvatarImageURLs;
         },
         getLoadedImagesURLs(state) {
             return state.imageURLsLoaded;

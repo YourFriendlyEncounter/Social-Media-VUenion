@@ -6,13 +6,13 @@
                     escDisabled
                     moveDisabled
                     :visible="profileImageVisible"
-                    :imgs="imageURL"
+                    :imgs="user.image"
                     :index="0"
                     @hide="profileImageVisible = false"></vue-easy-lightbox>
                 <img 
                 :class="{ 'img-avatar': user.image} " 
                 width="200" 
-                :src="imageURL" 
+                :src="user.image" 
                 style="min-height: 128; max-height: 300;"
                 @click="showAvatar">
                 <button 
@@ -20,7 +20,7 @@
                 id="button-edit-profile" 
                 class="custom-button"
                 @click="editProfile">
-                Редактировать профиль</button>
+                Редактировать</button>
             </div>
             <div id="personal-page-text-info">
                 <h2> {{ user.name }} {{ user.lastName }}</h2>
@@ -72,16 +72,17 @@ export default {
         },
         isUserMe(){
             let currentUser = this.$store.getters.user
-            if(!currentUser){
+            if(!currentUser) {
                 return false
             }
             return this.id == currentUser.id
         },
         getBirthDate() {
             let date = new Date(this.user.birthDate)
-            let difference = Math.floor(((new Date) - date.getTime()) / 31536000000);
-            if(difference < 0){
-                return "Родится " + date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (через " + (-difference - 1) + " " + this.getYearProperly(-difference - 1) + ")";
+            let difference = this.calculateAge(date)
+            if(new Date() - date < 0) {
+                difference = date.getFullYear() - new Date().getFullYear()
+                return "Родится " + date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (через " + (difference) + " " + this.getYearProperly(difference) + ")";
             }
             return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear() + " (" + difference + " " + this.getYearProperly(difference) + ")";
         },
@@ -90,7 +91,7 @@ export default {
         }
     },
     methods: {
-        getYearProperly(years){
+        getYearProperly(years) {
             if(years % 10 == 1)
                 return "год"
             else if((years % 10 == 2 || years % 10 == 3 || years % 10 == 4) && (years % 100 - years % 10) / 10 != 1)
@@ -100,24 +101,11 @@ export default {
         editProfile() {
             this.$router.push({ name: "EditProfile", params: { id: this.id }})
         },
-        async setImageURL(){
+        async setImageURL() {
             if(!this.user.image)
             {
                 let images = require.context('../assets/', false, /\.svg$/);
                 this.imageURL = images("./anonymous.svg")
-            }
-            else{
-                let URL = this.$store.getters.getLoadedUserAvatarURLs.find(u => u.id == this.user.id)
-                // Если ссылка уже была загружена ранее.
-                if(URL){
-                    this.imageURL = URL.link
-                }
-                else{
-                    let link = 'userAvatars/' + this.id;
-                    let newLink = await this.$store.dispatch('getImage', { link: link })
-                    
-                    this.imageURL = newLink
-                }
             }
         },
         async setCurrentPageUser() {
@@ -132,6 +120,12 @@ export default {
         showAvatar() {
             if(this.user.image)
                 this.profileImageVisible = true
+        },
+        calculateAge(dob) { 
+            var diff_ms = new Date().getTime() - dob.getTime();
+            var age_dt = new Date(diff_ms); 
+        
+            return Math.abs(age_dt.getUTCFullYear() - 1970);
         }
     },
     data() {
@@ -145,11 +139,14 @@ export default {
         id: String
     },
     created() {
-        this.setCurrentPageUser().then(() => {
+        this.setCurrentPageUser().then(async () => {
             if(this.user == null){
                 this.$router.go(-1);
                 Message.error("Данный пользователь недоступен.")
                 return;
+            }
+            if(this.user.name === "[Loading]"){
+                await this.$store.dispatch('loadUserInfo', {userID: this.id})
             }
             this.setImageURL()
         })
@@ -165,6 +162,11 @@ p{
     width: 100%;
     text-align: left;
 }
+
+#button-edit-profile {
+    width: 100%;
+}
+
 .img-avatar{
     cursor: pointer;
 }

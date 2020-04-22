@@ -30,7 +30,7 @@ new Vue({
   router,
   store,
   render: h => h(App),
-  created(){
+  async created(){
     // Your web app's Firebase configuration
     var firebaseConfig = {
       apiKey: "AIzaSyBoFRDJ8fnZLp__tAKH4K3itDXnqWuh5m0",
@@ -50,5 +50,21 @@ new Vue({
       }
       else this.$store.commit('setLoadingCurrentUser', false)
     })
+    const remoteConfig = firebase.remoteConfig();
+    remoteConfig.settings = {
+      minimumFetchIntervalMillis: 3600000,
+    };
+    remoteConfig.defaultConfig = ({
+      'feed_publishing_allowed': false,
+      'feed_commenting_allowed': false,
+    });
+
+    await remoteConfig.fetchAndActivate() 
+    .catch((err) => {
+      console.error(err);
+    });
+
+    this.$store.commit('setFeedPublishing', remoteConfig.getBoolean("feed_publishing_allowed"))
+    this.$store.commit('setFeedCommenting', remoteConfig.getBoolean("feed_commenting_allowed"))
   }
 }).$mount('#app')

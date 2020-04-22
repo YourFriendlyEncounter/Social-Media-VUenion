@@ -1,6 +1,5 @@
 export default {
     state: {
-        loading: false,
         error: null
     },
     mutations: {
@@ -15,9 +14,6 @@ export default {
         },
     },
     actions: {
-        setLoading({commit}, payload){
-            commit('setLoading', payload);
-        },
         setError({commit}, payload){
             commit('setError', payload);
         },
@@ -26,9 +22,6 @@ export default {
         }
     },
     getters: {
-        loading(state){
-            return state.loading;
-        },
         error(state){
             return state.error;
         }

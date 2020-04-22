@@ -2,28 +2,33 @@
     <div class="post-section">
         <NewPublication 
         v-if="checkUser && allowPosting"
+        class="post-section-new-publication"
         :placeholder="'Что интересного можете рассказать?'" 
         :field="field"/>
-        <div class="target-publications" style="margin-bottom: 2rem;">
+        <div class="target-publications">
             <Publication 
             v-for="post in getPosts" 
             :key="post.id" 
             :postID="post.id" 
             :canDelete="canDelete"
+            :field="field"
             :allowCommentsOnWall="allowCommentsOnWall"/>
-        </div>
-        <button class="custom-button" @click="loadNewPage">Загрузить ещё</button>
+        </div> 
+        <LoadingSmall v-if="isLoading" />
+        <button v-if="!isLoading && loadMore" class="custom-button" @click="loadNewPage" style="margin-bottom: 1rem;">Загрузить ещё</button>
     </div>
 </template>
 
 <script>
 import Publication from '../components/Publication'
 import NewPublication from '../components/NewPublication'
+import LoadingSmall from '../components/LoadingSmall'
 
 export default {
     components: {
         Publication,
-        NewPublication
+        NewPublication,
+        LoadingSmall
     },
     props: {
         field: String,
@@ -34,15 +39,15 @@ export default {
     data() {
         return {
             page: 0,
-            itemsPerPage: 15,
+            itemsPerPage: 5,
+            loadMore: true
         }
     },
     async created() {
-        this.$store.commit('clearPost')
         if(this.getPosts.length != 0){
-            return;
+            this.page = this.getPosts.length / this.itemsPerPage - 1
         }
-        this.loadEverything();
+        await this.loadEverything();
 
         window.onscroll = () => {
             this.infiniteScroll()
@@ -53,30 +58,55 @@ export default {
             return this.$store.getters.checkUser
         },
         getPosts() {
-            return this.$store.getters.getPosts.slice().filter(p => p.field == this.field && p.type != "comment").reverse()
+            return this.$store.getters.getPosts
+            .filter(p => p.field == this.field && p.type == "allPosts")
+            .sort((p, p2) => new Date(p.dateTimeAdded) - new Date(p2.dateTimeAdded))
         },
         isLoading() {
-            return this.$store.getters.loading
+            return this.$store.getters.isLoadingPosts
         }
     },
     methods: {
-        async loadNewPage(){
+        loadNewPage(){
             this.page++;
-            await this.loadEverything();
+            if(this.loadMore && !this.isLoading) {
+                this.loadEverything();
+            }
         },
         infiniteScroll(){
-            let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight ===
-            document.documentElement.offsetHeight
-            if(bottomOfWindow){
+            let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >=
+            document.documentElement.offsetHeight - 400 
+            if(bottomOfWindow) {
                 this.loadNewPage();
             }
         },
         getAuthorById(id){
             return this.$store.getters.getUserById(id)
         },
-        loadEverything() {
-            this.$store.dispatch('loadPosts', {field: this.field, page: this.page, itemsPerPage: this.itemsPerPage});
+        async loadEverything() {
+            await this.$store.dispatch('loadPosts', {field: this.field, type: "allPosts", page: this.page, itemsPerPage: this.itemsPerPage});
+            const loadRequest = this.page * this.itemsPerPage + this.itemsPerPage;
+            const postsToLoad = this.$store.getters.getPostsToLoadOnWallCounter
+            this.loadMore = loadRequest < postsToLoad
         },
     },
 }
 </script>
+
+<style scoped>
+.post-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.target-publications {
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.post-section-new-publication {
+    width: 100%;
+}
+</style>

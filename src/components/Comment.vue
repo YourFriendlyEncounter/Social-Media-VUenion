@@ -2,15 +2,18 @@
     <div class="post-comment-outer" :class="{ 'is-reply': isReply }">
         <div class="post-comment">
             <div class="post-comment-inner">
-                <a 
-                href="#"
+                <p
                 v-if="getUser.id == getComment.user || isUserAdmin || canDelete" 
                 class="post-comment-delete"
-                @click="deletePostOrComment(getComment)">X</a>
+                @click="deletePostOrComment(getComment)"></p>
 
-                <div class="post-author-photo-block">
-                    <img :src="getUserImageURL(getComment.user).link" width="32" height="32">
+                <div class="post-author-photo-block" v-if="getAuthorById(getComment.user).name != '[Loading]'"> 
+                    <router-link 
+                    :to="{ name: 'UserProfile', params: { id: getComment.user }}"> 
+                        <img :src="getAuthorById(getComment.user).image" width="32" height="32">
+                    </router-link>
                 </div>
+                <LoadingSmall v-else />
                 <div class="post-author-name-date-block">
                     <router-link 
                         class="link-user"
@@ -20,9 +23,10 @@
                     </router-link>
                     <p> {{ getRelativeDate(getComment.dateTimeAdded) }} </p>
                 </div>
-                <p style="margin-left: 0.5rem; max-width: 70%;">{{ getComment.text }}</p>
+                <p style="margin-left: 0.5rem; word-break: break-word;">{{ getComment.text }}</p>
             </div>
-            <div>
+            <div class="comment-rating">
+                <div />
                 <Rating :post="getComment" :canAddComment="!isReply" />
             </div>
         </div>
@@ -33,7 +37,6 @@
             v-for="reply in getReplies" :key="reply.id"
             :commentID="reply.id"
             :deletePostOrComment="deletePostOrComment"
-            :getUserImageURL="getUserImageURL"
             :getAuthorById="getAuthorById"
             :getRelativeDate="getRelativeDate"
             :isUserAdmin="isUserAdmin" 
@@ -43,7 +46,7 @@
         <NewComment 
         v-if="isShowingNewCommentPanel" 
         :post="getComment" 
-        :userImage="getUserImageURL(getUser.id).link" 
+        :userImage="getAuthorById(getUser.id).image" 
         :isReply="true"
         :field="getComment.field"/>
     </div>
@@ -53,13 +56,15 @@
 import Rating from '../components/Rating'
 import NewComment from '../components/NewComment'
 import Comment from './Comment'
+import LoadingSmall from './LoadingSmall'
 
 export default {
     name: 'Comment',
     components: {
         Rating,
         Comment,
-        NewComment
+        NewComment,
+        LoadingSmall
     },
     computed: {
         checkUser() {
@@ -85,7 +90,6 @@ export default {
     props: {
         commentID: String,
         deletePostOrComment: Function,
-        getUserImageURL: Function,
         getAuthorById: Function,
         getRelativeDate: Function,
         isUserAdmin: Boolean,
@@ -94,10 +98,9 @@ export default {
     },
     async beforeMount() {
         let author = this.getAuthorById(this.getComment.user);
-        if(author.name == "[Deleted]"){
+        if(author.name == "[Loading]"){
             author = await this.$store.dispatch('loadUserInfo', {userID: this.getComment.user})
         }
-        await this.$store.dispatch('loadUserAvatarURL', {user: author})
     }
 }
 </script>
@@ -117,24 +120,65 @@ export default {
     font-size: 80%;
     color: gray;
 }
+
 .post-comment-inner{
     display: flex;
 }
-.post-comment{
+
+.post-comment {
+    margin-top: 0.75rem;
+    margin-left: 1.5rem;
     display: flex;
     justify-content: space-between;
-    margin-left: 1.5rem;
+    animation: .5s slow-appear;
 }
-.post-comment   {
-    margin-top: 0.75rem;
+
+@media screen and (min-width: 900px){
 }
-.post-comment-delete{
-    margin-top: 0.5rem;
-    margin-left: -1.25rem;
-    margin-right: 1.25rem;
-    width: 0;
+
+@media screen and (max-width: 899px){
+    .post-comment {
+        margin-top: 0.75rem;
+        margin-left: 1.5rem;
+        display: flex; 
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .comment-rating {
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    hr {
+        border: 1px outset rgb(214, 214, 214);
+    }
+}
+
+.post-comment-delete {
     opacity: 0.4;
+    margin-right: 1rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
 }
+
+.post-comment-delete:before, .post-comment-delete:after {
+  position: absolute;
+  content: ' ';
+  height: 16px;
+  width: 2px;
+  background-color: #333;
+}
+
+.post-comment-delete:before {
+  transform: rotate(45deg);
+}
+
+.post-comment-delete:after {
+  transform: rotate(-45deg);
+}
+
 .post-comment-delete:hover{
     opacity: 1;
 }

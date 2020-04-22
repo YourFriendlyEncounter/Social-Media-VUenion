@@ -61,7 +61,7 @@ export default {
             }
             let isToRemove = this.isPostLiked(post)
             let userID = this.getUser.id
-            this.$store.dispatch('changeLikes', {post, userID, isToRemove})
+            this.$store.dispatch('changeLikes', {type: post.type, post, userID, isToRemove})
         },
         toggleDislikePost(post) {
             if(this.isLoadingLikes)
@@ -75,7 +75,15 @@ export default {
             }
             let isToRemove = this.isPostDisliked(post)
             let userID = this.getUser.id
-            this.$store.dispatch('changeDislikes', {post, userID, isToRemove})
+            const differenceBeforeDeletion = 10;
+            if((this.getLikedLength + 1) * differenceBeforeDeletion < this.getDisikedLength + 2) {
+                if(confirm('После этого действия пост будет безвозвратно удалён. Продолжить?')) {
+                    this.$store.dispatch('changeDislikes', {type: post.type, post, userID, isToRemove})
+                    this.$store.dispatch('deletePost', { type: post.type, payload: post, preventMessage: true})
+                    Message.warning("Пост был признан как неприемлимый и был безвозвратно удалён.")
+                }
+            }
+            else this.$store.dispatch('changeDislikes', {type: post.type, post, userID, isToRemove})
         },
         showCommentClicked(){
             if(!this.checkUser){
@@ -83,9 +91,21 @@ export default {
                 return;
             }
             this.$store.commit('setDisplayingNewCommentPanel', this.post.id)
-        }
+        },
     },
     computed: {
+        getLikedLength() {
+            let liked = this.post.liked
+            if(!liked)
+                return 0;
+            else return liked.length
+        },
+        getDisikedLength() {
+            let disliked = this.post.disliked
+            if(!disliked)
+                return 0;
+            else return disliked.length
+        },
         getUser() {
             return this.$store.getters.user;
         },

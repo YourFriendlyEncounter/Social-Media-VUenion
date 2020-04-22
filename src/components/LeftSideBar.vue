@@ -1,6 +1,6 @@
 <template>
     <div id="left-side-bar">
-        <h4>Главное меню</h4>
+        <h4 id="side-bar-label">Главное меню</h4>
         <hr>
         <router-link  
         v-for="option in options" 
@@ -32,20 +32,20 @@ export default {
                     link: "UserProfile"
                 },
                 {
-                    name: "Товарищи",
+                    name: "Все пользователи",
                     image: "friends.png",
-                    link: "Feed"
+                    link: "AllUsers"
                 },
-                {
+                /*{
                     name: "Сообщения",
                     image: "messages.png",
                     link: "Feed"
-                },
-                {
+                },*/
+                /*{
                     name: "Группы",
                     image: "groups.png",
                     link: "Feed"
-                },
+                },*/
                 {
                     name: "Зависимости",
                     image: "customer.png",
@@ -63,8 +63,44 @@ export default {
 </script>
 
 <style scoped>
-#left-side-bar{
-    width: 12rem;
+@media screen and (min-width: 900px){
+    #left-side-bar{
+        margin-top: 1rem;
+        width: 12rem;
+    }
+
+    .img-icon{
+        width: 24px;
+        margin: 0 8px 0 0;
+    }
+}
+
+@media screen and (max-width: 899px){
+    #left-side-bar{
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        display: flex;
+        justify-content: space-evenly;
+        background: rgb(255, 255, 255);
+        box-shadow: 0px 0px 4px black;
+        z-index: 999;
+    }
+
+    h4, hr {
+        display: none;
+    }
+
+    .container-link {
+        margin: .25rem .25rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .img-icon{
+        width: 32px;
+    }
 }
 h4{
     margin: 0;
@@ -72,9 +108,5 @@ h4{
 }
 .container-link:hover{
     background-color: rgba(151, 231, 255, 0.5);
-}
-.img-icon{
-    width: 24px;
-    margin: 0 8px 0 0;
 }
 </style>

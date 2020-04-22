@@ -5,6 +5,7 @@ import store from "./store"
 Vue.use(Router)
 
 import EditProfile from './views/EditPage.vue'
+import Feed from './views/Feed.vue'
 
 export default new Router({
     mode: "history",
@@ -12,7 +13,7 @@ export default new Router({
         {
             path: "/feed",
             name: "Feed",
-            component: () => import('./views/Feed.vue'),
+            component: Feed
         },
         {
             path: "/",
@@ -40,5 +41,15 @@ export default new Router({
             component: () => import('./views/Dependencies.vue'),    
             props: true
         },
+        {
+            path: "/all-users",
+            name: "AllUsers",
+            component: () => import('./views/AllUsers.vue'),
+        },
+        {
+            path: "*",
+            name: "404",
+            component: () => import('./views/PageNotFound.vue')
+        }
     ]
 })

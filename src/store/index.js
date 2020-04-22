@@ -6,6 +6,7 @@ import post from './post'
 import common from './common'
 import file from './file'
 import firebase from 'firebase/app'
+import 'firebase/remote-config'
 
 Vue.use(Vuex)
 
@@ -13,30 +14,36 @@ export default new Vuex.Store({
     namespaced: true,
     state: {
         componentKey: 0,
-        interval: null
+        feed_publishing_allowed: false,
+        feed_commenting_allowed: false
     },
     getters: {
         getComponentKey(state) {
             return state.componentKey
         },
+        getFeedPublishing(state) {
+            return state.feed_publishing_allowed;
+        },
+        getFeedCommenting(state) {
+            return state.feed_commenting_allowed;
+        }
     },
     mutations: {
         unlogUser(state) {
             firebase.auth().signOut();
             clearInterval(state.interval)
         },
-        stopInterval(state){
-            clearInterval(state.interval)
+        setFeedPublishing(state, payload) {
+            state.feed_publishing_allowed = payload;
         },
-        setInterval(state, payload) {
-            clearInterval(state.interval)
-            state.interval = payload;
+        setFeedCommenting(state, payload) {
+            state.feed_commenting_allowed = payload;
         }
     },
     actions: {
         changeComponentKey({state}) {
             state.componentKey++;
-        }
+        },
     },
     modules: {
         common,

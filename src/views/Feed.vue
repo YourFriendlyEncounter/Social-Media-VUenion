@@ -1,6 +1,6 @@
 <template>
     <div id="feed">
-        <PostSection :field="'feed'" :allowPosting="isUserAdmin" :allowCommentsOnWall="true" />
+        <PostSection :field="'feed'" :allowPosting="isUserAdmin || idPublishingAllowed" :allowCommentsOnWall="true" />
     </div>
 </template>
 
@@ -19,10 +19,13 @@ export default {
             }
             else return userInfo.isAdmin
         },
+        idPublishingAllowed() {
+            return this.$store.getters.getFeedPublishing
+        }
     },
     data(){
         return {
-            updateTimer: null
+            updateTimer: null,
         }
     },
 }

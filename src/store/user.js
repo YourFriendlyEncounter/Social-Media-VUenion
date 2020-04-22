@@ -1,7 +1,6 @@
 import firebase from 'firebase/app'
 
 import User from './user_help'
-import UserInfo from './user_info'
 import Message from 'vue-m-message'
 import Router from '../router'
 
@@ -38,7 +37,7 @@ export default {
         }
      },
     actions: {
-        async loadUserInfo ({commit}, {userID}){
+        async loadUserInfo ({commit, getters}, {userID}){
             commit('clearError')
             commit('setLoadingUserInfos', true)
             try{
@@ -60,6 +59,7 @@ export default {
                     u.showDateOfBirth = true;
                 if(u.birthDate == undefined)
                     u.birthDate = (new Date()).toString()
+                    
 
                 let newUserInfo = {}
                 newUserInfo.id = u.id;
@@ -67,8 +67,17 @@ export default {
                 newUserInfo.name = u.name;
                 newUserInfo.lastName = u.lastName;
                 newUserInfo.birthDate = u.birthDate;
-                newUserInfo.image = u.image;
                 
+                if(u.image){
+                    await firebase.storage().ref().child('userAvatars/' + u.id)
+                    .getDownloadURL().then((url) => { 
+                        newUserInfo.image = url
+                    });
+                }
+                else {
+                    let images = require.context('../assets/', false, /\.svg$/);
+                    newUserInfo.image = images("./anonymous.svg")
+                }
                 newUserInfo.isAdmin = u.isAdmin;
 
                 newUserInfo.status = u.status;
@@ -79,7 +88,8 @@ export default {
                 newUserInfo.allowCommentsOnWall = u.allowCommentsOnWall
                 newUserInfo.showDateOfBirth = u.showDateOfBirth
 
-                commit('addUserToList', newUserInfo)
+                if(!getters.getUserList.some(u => u.id === newUserInfo.id))
+                    commit('addUserToList', newUserInfo)
                 commit('setLoadingUserInfos', false)
                 return newUserInfo;
             }
@@ -98,7 +108,7 @@ export default {
                 .createUserWithEmailAndPassword(email, password)
                 commit('setUser', new User(user.user.uid))
 
-                let newUserInfo = new UserInfo()
+                let newUserInfo = {}
                 newUserInfo.id = user.user.uid;
                 newUserInfo.name = name;
                 newUserInfo.lastName = lastName;
@@ -201,6 +211,22 @@ export default {
             finally{
                 commit('setLoadingCurrentUser', false)
             }
+        },
+        async loadAllUserInfos({commit, dispatch}) {
+            commit('setLoadingUserInfos', true)
+            try {
+                let userInfos = await firebase.database().ref().child('userInfos').once('value');
+                let userInfoVals = await userInfos.val()
+                Object.keys(userInfoVals).forEach(async (key) => {
+                    await dispatch('loadUserInfo', { userID: key })
+                })
+                commit('setLoadingUserInfos', false)
+            }
+            catch(error) {
+                commit('setLoadingUserInfos', false)
+                Message.error(error.message);
+                throw error
+            }
         }
     },
     getters: {
@@ -225,7 +251,7 @@ export default {
         getUserById: (state, getters) => (id) => {
             let userList = getters.getUserList;
             let user = {
-                name: "[Deleted]",
+                name: "[Loading]",
                 lastName: ""
             }
             Object.keys(userList).forEach(key =>{

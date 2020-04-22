@@ -11,7 +11,6 @@
 </template>
 
 <script>
-import Post from '../store/post_help'
 import Message from 'vue-m-message';
 
 export default {
@@ -28,10 +27,11 @@ export default {
                 Message.error("Нельзя опубликовать комментарий, длиной менее 3 символов.")
                 return;
             }
-            let newPost = new Post();
+            let newPost = {};
             newPost.text = commentText;
             newPost.dateTimeAdded = (new Date()).toString();
             newPost.images = [];
+            newPost.video = "";
             newPost.edited = false;
             newPost.liked = [];
             newPost.disliked = [];
@@ -40,17 +40,16 @@ export default {
             newPost.target = post.id;
             newPost.field = this.field;
 
-            this.$store.dispatch('newPost', newPost)
+            this.$store.dispatch('newPost', { type: 'comments', payload: newPost})
                 .then(() => {
                     this.sumbitStatus = "ok";
                     this.$refs.commentText.value = ""
-                    post.showComment = false;
                 })
                 .catch(err => {
                     this.sumbitStatus = err.message
                 })
         }
-    }
+    },
 }
 </script>
 

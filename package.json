@@ -11,6 +11,7 @@
     "core-js": "^3.6.4",
     "firebase": "^7.12.0",
     "jquery": "^3.4.1",
+    "moment": "^2.24.0",
     "vue": "^2.6.11",
     "vue-confirm-dialog": "^0.2.5",
     "vue-easy-lightbox": "^0.11.0",

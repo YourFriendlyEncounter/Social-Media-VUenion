@@ -1,5 +1,5 @@
 <template>
-    <div id="div-authorize-main" class="">
+    <div id="div-authorize-main">
         <div id="div-authorize-leftside">
             <h1>Оставайтесь на связи</h1>
             <p>Присоединяйтесь к дружному сообществу VUenion всего за несколько кликов</p>
@@ -9,15 +9,23 @@
             <div class="container-generic">
                 <form id="form-registration" class="form-generic" @submit.prevent="createNewUser">
                     <h3>Моментальная регистрация</h3>
-                    <input type="text" class="input-text" placeholder="Ваше имя" name="name" required="true" minlength="3" maxlength="32" v-model="name">
-                    <input type="text" class="input-text" placeholder="Ваша фамилия" name="lastName" required="true" minlength="3" maxlength="32" v-model="lastName">
-                    <input type="email" class="input-text" placeholder="Ваш e-mail" name="lastName" required="true" minlength="3" maxlength="32" v-model="email">
-                    <input type="password" class="input-text" placeholder="Ваш пароль" name="lastName" required="true" minlength="6" maxlength="32" v-model="password">
+                    <input type="text" class="input-text" placeholder="Имя" name="name" required="true" minlength="3" maxlength="32" v-model="name">
+                    <p>Видно всем пользователям</p>
+                    <hr>
+                    <input type="text" class="input-text" placeholder="Фамилия" name="lastName" required="true" minlength="3" maxlength="32" v-model="lastName">
+                    <p>Видна всем пользователям</p>
+                    <hr>
                     <date-picker :required="true"
                     v-model="birthDate" 
                     :clearable="false"
                     :editable="false"
-                    :placeholder="'Ваша дата рождения'"/>
+                    :placeholder="'Дата рождения'"/>
+                    <p>Видна всем пользователям по умолчанию</p>
+                    <hr>
+                    <input type="email" class="input-text" placeholder="E-mail" name="lastName" required="true" minlength="3" maxlength="32" v-model="email">
+                    <p>Будет использован для авторизации</p>
+                    <hr>
+                    <input type="password" class="input-text" placeholder="Пароль" name="lastName" required="true" minlength="6" maxlength="32" v-model="password">
                     <input type="submit" class="custom-button" style="background-color:#42cc8c;" value="Зарегистрироваться">
                 </form>
             </div>
@@ -105,15 +113,34 @@ export default {
 </script>
 
 <style scoped>
+#div-authorize-leftside p {
+    margin: .5rem 0;
+}
+
 .container-generic{
     margin: 1rem 0;
 }
-#div-authorize-main{
+#form-registration {
+    padding: 0.5rem 1rem;
+}
+
+#form-registration hr {
     width: 100%;
+}
+
+#form-registration p {
+    color: gray;
+    text-align: left;
+    font-size: 80%;
+    cursor: none;
+}
+
+#div-authorize-main{
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 #div-authorize-leftside{
     display: flex;
     justify-content: center;
@@ -121,6 +148,17 @@ export default {
     flex-direction: column;
     margin-right: 4rem;
 }
+
+@media screen and (max-width: 999px){
+    #div-authorize-main{
+        flex-direction: column;
+    }
+
+    #div-authorize-leftside{ 
+        margin: 0;
+    }
+}
+
 #div-authorize-leftside p{
     max-width: 400px;
 }
@@ -131,6 +169,6 @@ h2{
     margin: 0.5rem 0 1.5rem 0;
 }
 input, .mx-datepicker{
-    margin: 0.25rem 2rem;
+    margin: 0.25rem 0rem;
 }
 </style>
