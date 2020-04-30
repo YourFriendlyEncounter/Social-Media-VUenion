@@ -20,7 +20,7 @@
                     :clearable="false"
                     :editable="false"
                     :placeholder="'Дата рождения'"/>
-                    <p>Видна всем пользователям по умолчанию</p>
+                    <p>Видна всем по умолчанию</p>
                     <hr>
                     <input type="email" class="input-text" placeholder="E-mail" name="lastName" required="true" minlength="3" maxlength="32" v-model="email">
                     <p>Будет использован для авторизации</p>
@@ -147,6 +147,7 @@ export default {
     align-items: center;
     flex-direction: column;
     margin-right: 4rem;
+    font-family: 'Montserrat';
 }
 
 @media screen and (max-width: 999px){
@@ -165,10 +166,14 @@ export default {
 #div-authorize{
     margin: 0 1rem;
 }
-h2{
-    margin: 0.5rem 0 1.5rem 0;
+h1{
+    margin: 0.5rem 0;
 }
 input, .mx-datepicker{
     margin: 0.25rem 0rem;
+}
+
+h3 {
+    margin: 1rem 0;
 }
 </style>

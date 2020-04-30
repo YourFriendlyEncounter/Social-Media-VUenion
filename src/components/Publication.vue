@@ -41,13 +41,14 @@
                     :visible="visible"
                     :imgs="getImages"
                     :index="index"
+                    @on-index-change="changeIndex"
                     @hide="handleHide"></vue-easy-lightbox>
                     <img
                     v-for="(image, imageIndex) in getImages"
                     :key="image"
                     @click="showImg(imageIndex)"
                     :src="image"
-                    :class="{ 'image-single': getImages.length == 1, 'image-other': getImages.length > 1}"
+                    :class="{ 'image-single': getImages.length == 1, 'image-other': getImages.length > 1, 'is-picked-up': imageIndex == index}"
                     class="image">
                 </div>
             </div>
@@ -92,12 +93,16 @@ export default {
         LoadingSmall
     },
     methods: {
+        changeIndex(oldIndex, newIndex) {
+            this.index = newIndex;
+        },
         showImg (index) {
             this.index = index
             this.visible = true
         },
         handleHide () {
             this.visible = false
+            this.index = null
         },
         getAuthorById(id){
             let userInfo = this.$store.getters.getUserById(id)
@@ -282,10 +287,16 @@ export default {
     flex-wrap: wrap;
 }
 
+.is-picked-up {
+    opacity: 0;
+    transition: opacity .5s;
+}
+
 .image{
     margin: 0.25rem; 
     background-size: cover;
     cursor: pointer;
+    transition: opacity .5s;
 }
 
 .image-single{

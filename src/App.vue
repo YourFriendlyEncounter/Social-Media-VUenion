@@ -43,7 +43,7 @@ export default {
 </script>
 
 <style>
-body, h1, h2, h4, p{
+body, h1, h2, h3, h4, p, a{
   margin: 0;
 }
 
@@ -94,9 +94,13 @@ body, h1, h2, h4, p{
   }
   
   #main-content-center{
-    margin: 1rem 1rem 2.4rem 1rem;
+    margin: 1rem 1rem 3rem 1rem;
     display: flex;
     flex-direction: column;
+  }
+
+  #textarea-about {
+    height: 4rem;
   }
 }
 

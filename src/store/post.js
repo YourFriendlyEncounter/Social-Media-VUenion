@@ -8,7 +8,7 @@ export default {
         loadingLikes: false,
         loadingPosts: false,
         displayingNewCommentPanel: "",
-        postsToLoadOnWall: 49
+        postsToLoadOnWall: 10
     },
     mutations: {
         setPosts (state, payload) {

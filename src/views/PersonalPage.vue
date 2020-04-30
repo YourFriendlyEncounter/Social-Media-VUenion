@@ -10,7 +10,7 @@
                     :index="0"
                     @hide="profileImageVisible = false"></vue-easy-lightbox>
                 <img 
-                :class="{ 'img-avatar': user.image} " 
+                :class="{ 'img-avatar': user.image, 'is-picked-up': profileImageVisible} " 
                 width="200" 
                 :src="user.image" 
                 style="min-height: 128; max-height: 300;"
@@ -165,20 +165,51 @@ p{
 
 #button-edit-profile {
     width: 100%;
+    margin-top: 0.5rem;
 }
 
 .img-avatar{
     cursor: pointer;
 }
+
+.is-picked-up {
+    opacity: 0;
+    transition: opacity .5s;
+}
+
 #personal-page-top{
     display:flex;
 }
+
 #personal-page-image{
     width: 200px;
-    margin-bottom: 1rem;
 }
+
+#personal-page-image img {
+  box-shadow: 0 0 6px rgb(71, 71, 71);
+  background: #eee;
+  transition: opacity .5s;
+}
+
 #personal-page-text-info{
-    margin: 0.5rem;
-    text-align: left;
+    margin-top: 0.5rem;
+}
+
+@media screen and (min-width: 900px){
+    #personal-page-image{
+        margin-bottom: 1rem;
+    }
+    #personal-page-text-info{
+        margin: 0.5rem;
+        text-align: left;
+    }
+}
+@media screen and (max-width: 899px){
+    #personal-page-top{
+        flex-direction: column;
+    }
+    #personal-page-text-info {
+        width: 100%;
+    }
 }
 </style>

@@ -48,6 +48,9 @@ export default {
         },
         getUser() {
             return this.$store.getters.user;
+        },
+        checkUser() {
+            return this.$store.getters.checkUser;
         }
     },
     methods: {
@@ -55,6 +58,13 @@ export default {
             this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
         },
         async submitEdit() {
+            if( !this.checkUser || this.id != this.getUser.id)
+            {
+                Message.error("Доступ отклонён.")
+                this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
+                return;
+            }
+
             if(this.user.name.length < 3 || this.user.lastName.length < 3){
                 Message.error('Имя, фамилия пользователя не должны быть короче 3 символов')
                 return
@@ -92,35 +102,34 @@ export default {
         handleFileUpload() {
             this.imageToSend = this.$refs.file.files[0];
         },
-        async setCurrentPageUser() {
-            if(this.getLoadedUsers.some(u => u.id == this.id)){
-                this.user = this.$store.getters.getUserById(this.id);
-            }
-            else {
-                let id = this.id;
-                this.user = await this.$store.dispatch('loadUserInfo', {userID: id})
-            }
-            if(this.id != this.getUser.id)
-            {
-                Message.error("Доступ отклонён.")
-                this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
-                return;
-            }
-        },
     },
     props: {
         id: String
     },
     data() {
         return {
-            user: null,
+            user: {
+                name: "[Loading]"
+            },
             userSet: false,
             initialUser: null,
             imageToSend: null
         }
     },
-    created() {
-        this.setCurrentPageUser();
+    async created() {
+        if(this.getLoadedUsers.some(u => u.id == this.id)){
+            this.user = this.$store.getters.getUserById(this.id);
+        }
+        else {
+            this.user = await this.$store.dispatch('loadUserInfo', {userID: this.id})
+            if(!this.checkUser || this.id != this.getUser.id)
+            {
+                Message.error("Доступ отклонён.")
+            this.$router.push({ name: 'UserProfile', params: { id: this.user.id }});
+                return;
+            }
+        }
+        this.initialUser = { ...this.user };
     },
     beforeDestroy() {
         if(!this.userSet){ 
@@ -134,11 +143,6 @@ export default {
             this.user.showDateOfBirth = this.initialUser.showDateOfBirth;
         }
     },
-    beforeMount() {
-        let loadedUserInfo = this.getCurrentPageUser;
-        this.user = loadedUserInfo;
-        this.initialUser = { ...loadedUserInfo };
-    }
 }
 </script>
 

@@ -6,7 +6,7 @@
         </router-link>
         <div id="div-auth">
             <div id="div-auth-not-authorized" v-if="!checkUser">
-                <router-link :to="'/'">Войти / Зарегистрироватсья</router-link>
+                <router-link :to="'/'">Войти / Зарегистрироваться</router-link>
             </div>
             <div id="div-auth-authorized" v-else>
                 <h4>Добро пожаловать, {{ getUserInfo.name }}! </h4>
@@ -43,10 +43,6 @@ export default {
 </script>
 
 <style scoped>
-header {
-    width: -webkit-fill-available;
-}
-
 header, #div-auth, #div-auth-not-authorized, #div-auth-authorized{
     display: flex;
     justify-content: space-between;
@@ -56,6 +52,9 @@ header, #div-auth, #div-auth-not-authorized, #div-auth-authorized{
 header{
     background: rgb(92, 151, 240);
     padding: 4px;
+    width: -webkit-fill-available;
+    font-family: 'Montserrat';
+    box-shadow: 0 2px 4px #ccc;
 }
 
 #logo {
@@ -63,8 +62,6 @@ header{
     align-items: center;
     text-decoration: none;
 }
-
-
 
 #logo h1{
     margin-left: 0.5rem;
@@ -80,6 +77,7 @@ header{
 
 #div-auth-authorized h4 { 
     color: white;
+    margin: 0 4px;
 }
 
 @media screen and (min-width: 900px){
@@ -90,7 +88,11 @@ header{
 }
 @media screen and (max-width: 899px){
     #div-auth-authorized h4 { 
-        font-size: 80%;
+        display: none;
+        width: 0;
+    }
+    #div-auth-not-authorized a{ 
+        font-size: 75%;
     }
 }
 </style>
